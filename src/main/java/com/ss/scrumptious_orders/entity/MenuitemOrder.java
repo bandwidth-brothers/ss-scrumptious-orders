@@ -22,6 +22,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class MenuitemOrder {
 
+    @JsonIgnore
     @EmbeddedId
     MenuitemOrderKey id;
 

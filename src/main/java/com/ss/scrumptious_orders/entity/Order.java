@@ -44,7 +44,7 @@ public class Order {
     @JoinColumn(name = "delivery_id", referencedColumnName = "id")
     private Delivery delivery;
 
-    @OneToMany(mappedBy = "menuitem")
+    @OneToMany(mappedBy = "order")
     List<MenuitemOrder> menuitemOrders;
 
     @Column(name = "confirmation_code")

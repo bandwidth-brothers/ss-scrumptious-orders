@@ -3,19 +3,26 @@ package com.ss.scrumptious_orders.service;
 import java.time.ZonedDateTime;
 import java.util.List;
 
-import javax.transaction.Transactional;
-
 import com.ss.scrumptious_orders.dao.CustomerRepository;
 import com.ss.scrumptious_orders.dao.DeliveryRepository;
+import com.ss.scrumptious_orders.dao.MenuitemOrderRepository;
+import com.ss.scrumptious_orders.dao.MenuitemRepository;
 import com.ss.scrumptious_orders.dao.OrderRepository;
 import com.ss.scrumptious_orders.dao.RestaurantRepository;
+import com.ss.scrumptious_orders.dto.CreateMenuitemOrderDto;
 import com.ss.scrumptious_orders.dto.CreateOrderDto;
+import com.ss.scrumptious_orders.dto.UpdateMenuitemOrderDto;
 import com.ss.scrumptious_orders.dto.UpdateOrderDto;
 import com.ss.scrumptious_orders.entity.Customer;
+import com.ss.scrumptious_orders.entity.Menuitem;
+import com.ss.scrumptious_orders.entity.MenuitemOrder;
+import com.ss.scrumptious_orders.entity.MenuitemOrderKey;
 import com.ss.scrumptious_orders.entity.Order;
 import com.ss.scrumptious_orders.entity.Restaurant;
 import com.ss.scrumptious_orders.exception.NoSuchCustomerException;
 import com.ss.scrumptious_orders.exception.NoSuchDeliveryException;
+import com.ss.scrumptious_orders.exception.NoSuchMenuitemException;
+import com.ss.scrumptious_orders.exception.NoSuchMenuitemOrderException;
 import com.ss.scrumptious_orders.exception.NoSuchOrderException;
 import com.ss.scrumptious_orders.exception.NoSuchRestaurantException;
 
@@ -33,6 +40,8 @@ public class OrderServiceImpl implements OrderService {
     private final CustomerRepository customerRepository;
     private final RestaurantRepository restaurantRepository;
     private final DeliveryRepository deliveryRepository;
+    private final MenuitemRepository menuitemRepository;
+    private final MenuitemOrderRepository menuitemOrderRepository;
 
     @Override
     public List<Order> getAllOrders() {
@@ -40,7 +49,6 @@ public class OrderServiceImpl implements OrderService {
         return orderRepository.findAll();
     }
 
-    @Transactional
     @Override
     public Order createNewOrder(CreateOrderDto createOrderDto) {
         log.trace("createNewOrder");
@@ -64,16 +72,15 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public Order getOrderById(Long id) {
-        log.trace("getOrderById = " + id);
-        return orderRepository.findById(id).orElseThrow(() -> new NoSuchOrderException(id));
+    public Order getOrderById(Long orderId) {
+        log.trace("getOrderById orderId = " + orderId);
+        return orderRepository.findById(orderId).orElseThrow(() -> new NoSuchOrderException(orderId));
     }
 
-    @Transactional
     @Override
-    public void updateOrder(Long id, UpdateOrderDto updateOrderDto) {
-        log.trace("updateOrder id = " + id);
-        Order order = orderRepository.getById(id);
+    public void updateOrder(Long orderId, UpdateOrderDto updateOrderDto) {
+        log.trace("updateOrder orderId = " + orderId);
+        Order order = orderRepository.getById(orderId);
 
         if (updateOrderDto.getCustomerId() != null) {
             order.setCustomer(customerRepository.findById(updateOrderDto.getCustomerId())
@@ -106,9 +113,49 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public void addItemToOrder(Long orderId, Long menuitemId, Long quanity) {
-        // TODO Auto-generated method stub
+    public void deleteOrder(Long orderId) {
+        log.trace("deleteOrder orderId = " + orderId);
 
+        orderRepository.findById(orderId).ifPresent(orderRepository::delete);
+
+    }
+
+    @Override
+    public MenuitemOrder addItemToOrder(Long orderId, CreateMenuitemOrderDto createMenuitemOrderDto) {
+        log.trace("addItemToOrder orderId = " + orderId + "menuitemId = " + createMenuitemOrderDto.getMenuitemId());
+
+        Order order = getOrderById(orderId);
+        Menuitem menuitem = menuitemRepository.findById(createMenuitemOrderDto.getMenuitemId())
+                .orElseThrow(() -> new NoSuchMenuitemException(createMenuitemOrderDto.getMenuitemId()));
+        Long quantity;
+        if (createMenuitemOrderDto.getQuantity() != null) {
+            quantity = createMenuitemOrderDto.getQuantity();
+        } else {
+            quantity = Long.valueOf(1);
+        }
+
+        MenuitemOrder menuitemOrder = MenuitemOrder.builder().id(new MenuitemOrderKey(menuitem.getId(), order.getId()))
+                .order(order).menuitem(menuitem).quantity(quantity).build();
+
+        return menuitemOrderRepository.save(menuitemOrder);
+    }
+
+    @Override
+    public void editItemQuantity(Long orderId, Long menuitemId, UpdateMenuitemOrderDto updateMenuitemOrderDto) {
+        log.trace("editItemQuantity orderId = " + orderId + "menuitemId = " + menuitemId);
+
+        MenuitemOrder menuitemOrder = menuitemOrderRepository.findById(new MenuitemOrderKey(menuitemId, orderId))
+                .orElseThrow(() -> new NoSuchMenuitemOrderException(new MenuitemOrderKey(menuitemId, orderId)));
+        menuitemOrder.setQuantity(updateMenuitemOrderDto.getQuantity());
+        menuitemOrderRepository.save(menuitemOrder);
+    }
+
+    @Override
+    public void removeItemFromOrder(Long orderId, Long menuitemId) {
+        log.trace("removeItemFromOrder orderId = " + orderId + "menuitemId = " + menuitemId);
+
+        menuitemOrderRepository.findById(new MenuitemOrderKey(menuitemId, orderId))
+                .ifPresent(menuitemOrderRepository::delete);
     }
 
 }
