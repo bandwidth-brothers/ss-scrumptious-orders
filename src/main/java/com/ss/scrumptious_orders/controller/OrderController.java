@@ -17,7 +17,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
-//import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -47,12 +46,16 @@ public class OrderController {
         return ResponseEntity.ok(orders);
     }
 
+    @PreAuthorize("hasRole('ADMIN')"
+        + " OR @customerAuthenticationManager.customerIdMatches(authentication, #orderId)")
     @GetMapping(value = "/{orderId}", produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE })
     public ResponseEntity<Order> getOrderById(@PathVariable Long orderId) {
         log.info("Get Order id = " + orderId);
         return ResponseEntity.of(Optional.ofNullable(orderService.getOrderById(orderId)));
     }
 
+    @PreAuthorize("hasRole('ADMIN')"
+    + " OR @customerAuthenticationManager.customerIdMatches(authentication, #createOrderDto)")
     @PostMapping(consumes = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE })
     public ResponseEntity<Order> createNewOrder(@Valid @RequestBody CreateOrderDto createOrderDto) {
         log.info("POST Order");
@@ -60,6 +63,8 @@ public class OrderController {
         return ResponseEntity.ok(order);
     }
 
+    @PreAuthorize("hasRole('ADMIN')"
+    + " OR @customerAuthenticationManager.customerIdMatches(authentication, #orderId)")
     @PutMapping(value = "/{orderId}", consumes = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE })
     public ResponseEntity<Void> updateExistingOrder(@Valid @RequestBody UpdateOrderDto updateOrderDto,
             @PathVariable Long orderId) {
@@ -68,6 +73,8 @@ public class OrderController {
         return ResponseEntity.noContent().build();
     }
 
+    @PreAuthorize("hasRole('ADMIN')"
+    + " OR @customerAuthenticationManager.customerIdMatches(authentication, #orderId)")
     @DeleteMapping(value = "/{orderId}")
     public ResponseEntity<Void> deletOrder(@PathVariable Long orderId) {
         log.info("DELETE Order id = " + orderId);
@@ -76,6 +83,8 @@ public class OrderController {
         return ResponseEntity.noContent().build();
     }
 
+    @PreAuthorize("hasRole('ADMIN')"
+    + " OR @customerAuthenticationManager.customerIdMatches(authentication, #orderId)")
     @PostMapping(value = "/{orderId}", consumes = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE })
     public ResponseEntity<MenuitemOrder> createNewMenuitemOrder(
             @Valid @RequestBody CreateMenuitemOrderDto createMenuitemOrderDto, @PathVariable Long orderId) {
@@ -84,6 +93,8 @@ public class OrderController {
         return ResponseEntity.ok(menuitemOrder);
     }
 
+    @PreAuthorize("hasRole('ADMIN')"
+    + " OR @customerAuthenticationManager.customerIdMatches(authentication, #orderId)")
     @PutMapping(value = "/{orderId}/menuitems/{menuitemId}", consumes = { MediaType.APPLICATION_JSON_VALUE,
             MediaType.APPLICATION_XML_VALUE })
     public ResponseEntity<MenuitemOrder> updateExistingMenuitemOrder(
@@ -95,6 +106,8 @@ public class OrderController {
         return ResponseEntity.noContent().build();
     }
 
+    @PreAuthorize("hasRole('ADMIN')"
+    + " OR @customerAuthenticationManager.customerIdMatches(authentication, #orderId)")
     @DeleteMapping(value = "/{orderId}/menuitems/{menuitemId}")
     public ResponseEntity<Void> deletOrder(@PathVariable Long orderId, @PathVariable Long menuitemId) {
         log.info("DELETE menuitemOrder orderId = " + orderId + ", menuitemId = " + menuitemId);
