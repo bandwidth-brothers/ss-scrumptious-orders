@@ -16,11 +16,20 @@ import lombok.NoArgsConstructor;
 @Builder
 public class CreateOrderDto {
 
+    // only the customer and restaurant are required
+
     @NotNull
     private UUID customerId;
 
     @NotNull
     private Long restaurantId;
 
+    private Long deliveryId;
+    private String confirmationCode;
+    private Float orderDiscount;
+    private String preparationStatus;
     private ZonedDateTime requestedDeliveryTime;
+    private ZonedDateTime submittedAt;
+
+    private CreateMenuitemOrderDto[] menuitems;
 }

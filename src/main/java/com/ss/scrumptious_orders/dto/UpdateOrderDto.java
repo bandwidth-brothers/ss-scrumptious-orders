@@ -26,4 +26,7 @@ public class UpdateOrderDto {
     private ZonedDateTime requestedDeliveryTime;
     private ZonedDateTime submittedAt;
 
+    // using create here because we dont have access to the menuitemId from this controller endpoint
+    private CreateMenuitemOrderDto[] menuitems;
+
 }

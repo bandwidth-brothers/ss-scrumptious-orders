@@ -1,7 +1,10 @@
 package com.ss.scrumptious_orders.service;
 
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.List;
+
+import javax.transaction.Transactional;
 
 import com.ss.scrumptious_orders.dao.CustomerRepository;
 import com.ss.scrumptious_orders.dao.DeliveryRepository;
@@ -49,26 +52,66 @@ public class OrderServiceImpl implements OrderService {
         return orderRepository.findAll();
     }
 
+    @Transactional
     @Override
     public Order createNewOrder(CreateOrderDto createOrderDto) {
         log.trace("createNewOrder");
+
+        // setting values that must exist
         Customer customer = customerRepository.findById(createOrderDto.getCustomerId())
                 .orElseThrow(() -> new NoSuchCustomerException(createOrderDto.getCustomerId()));
 
         Restaurant restaurant = restaurantRepository.findById(createOrderDto.getRestaurantId())
                 .orElseThrow(() -> new NoSuchRestaurantException(createOrderDto.getRestaurantId()));
 
-        ZonedDateTime deliveryTime;
-        if (createOrderDto.getRequestedDeliveryTime() == null) {
-            deliveryTime = ZonedDateTime.now().plusHours(1);
-        } else {
-            deliveryTime = createOrderDto.getRequestedDeliveryTime();
+        Order order = Order.builder()
+                .customer(customer)
+                .restaurant(restaurant)
+                .preparationStatus("Preparing")
+                .requestedDeliveryTime(ZonedDateTime.now().plusHours(1))
+                .build();
+
+        // setting values if they exist in the json
+        if (createOrderDto.getDeliveryId() != null) {
+            order.setDelivery(deliveryRepository.findById(createOrderDto.getDeliveryId())
+                    .orElseThrow(() -> new NoSuchDeliveryException(createOrderDto.getDeliveryId())));
+        }
+        if (createOrderDto.getDeliveryId() != null) {
+            order.setDelivery(deliveryRepository.findById(createOrderDto.getDeliveryId())
+                    .orElseThrow(() -> new NoSuchDeliveryException(createOrderDto.getDeliveryId())));
+        }
+        if (createOrderDto.getRestaurantId() != null) {
+            order.setRestaurant(restaurantRepository.findById(createOrderDto.getRestaurantId())
+                    .orElseThrow(() -> new NoSuchRestaurantException(createOrderDto.getRestaurantId())));
+        }
+        if (createOrderDto.getConfirmationCode() != null) {
+            order.setConfirmationCode(createOrderDto.getConfirmationCode());
+        }
+        if (createOrderDto.getOrderDiscount() != null) {
+            order.setOrderDiscount(createOrderDto.getOrderDiscount());
+        }
+        if (createOrderDto.getPreparationStatus() != null) {
+            order.setPreparationStatus(createOrderDto.getPreparationStatus());
+        }
+        if (createOrderDto.getRequestedDeliveryTime() != null) {
+            order.setRequestedDeliveryTime(createOrderDto.getRequestedDeliveryTime());
+        }
+        if (createOrderDto.getSubmittedAt() != null) {
+            order.setSubmitedAt(createOrderDto.getSubmittedAt());
         }
 
-        Order order = Order.builder().customer(customer).restaurant(restaurant).requestedDeliveryTime(deliveryTime)
-                .preparationStatus("Preparing").build();
+        // need to save here before adding the menuitems because menuitems need a valid orderId
+        order = orderRepository.save(order);
 
-        return orderRepository.save(order);
+        List<MenuitemOrder> menuitemOrders = new ArrayList<>();
+        if(createOrderDto.getMenuitems() != null) {
+            for (CreateMenuitemOrderDto createMenuitemOrderDto : createOrderDto.getMenuitems()) {
+                menuitemOrders.add(addItemToOrder(order.getId(), createMenuitemOrderDto));
+            }
+            order.setMenuitemOrders(menuitemOrders);
+        }
+
+        return order;
     }
 
     @Override
@@ -77,10 +120,11 @@ public class OrderServiceImpl implements OrderService {
         return orderRepository.findById(orderId).orElseThrow(() -> new NoSuchOrderException(orderId));
     }
 
+    @Transactional
     @Override
     public void updateOrder(Long orderId, UpdateOrderDto updateOrderDto) {
         log.trace("updateOrder orderId = " + orderId);
-        Order order = orderRepository.getById(orderId);
+        Order order = getOrderById(orderId);
 
         if (updateOrderDto.getCustomerId() != null) {
             order.setCustomer(customerRepository.findById(updateOrderDto.getCustomerId())
@@ -109,6 +153,14 @@ public class OrderServiceImpl implements OrderService {
         if (updateOrderDto.getSubmittedAt() != null) {
             order.setSubmitedAt(updateOrderDto.getSubmittedAt());
         }
+
+        if(updateOrderDto.getMenuitems() != null) {
+            for (CreateMenuitemOrderDto createMenuitemOrderDto : updateOrderDto.getMenuitems()) {
+                editItemQuantity(orderId, createMenuitemOrderDto.getMenuitemId(), 
+                        new UpdateMenuitemOrderDto(createMenuitemOrderDto.getQuantity()));
+            }
+        }
+
         orderRepository.save(order);
     }
 
@@ -127,15 +179,13 @@ public class OrderServiceImpl implements OrderService {
         Order order = getOrderById(orderId);
         Menuitem menuitem = menuitemRepository.findById(createMenuitemOrderDto.getMenuitemId())
                 .orElseThrow(() -> new NoSuchMenuitemException(createMenuitemOrderDto.getMenuitemId()));
-        Long quantity;
-        if (createMenuitemOrderDto.getQuantity() != null) {
-            quantity = createMenuitemOrderDto.getQuantity();
-        } else {
-            quantity = Long.valueOf(1);
-        }
 
         MenuitemOrder menuitemOrder = MenuitemOrder.builder().id(new MenuitemOrderKey(menuitem.getId(), order.getId()))
-                .order(order).menuitem(menuitem).quantity(quantity).build();
+                .order(order).menuitem(menuitem).quantity(Long.valueOf(1)).build();
+
+        if (createMenuitemOrderDto.getQuantity() != null) {
+            menuitemOrder.setQuantity(createMenuitemOrderDto.getQuantity());
+        }
 
         return menuitemOrderRepository.save(menuitemOrder);
     }
