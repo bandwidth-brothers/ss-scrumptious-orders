@@ -25,7 +25,7 @@ pipeline{
 		stage('Publish'){
 			steps{
 				withAWS(region: 'us-east-2', credentials: 'aws-creds'){
-					s3Upload(bucket: 'ss-scrumptious-artifacts', file: 'target/ss-scrumptious-orders-0.0.1-SNAPSHOT.jar', path: 'order-backend.jar')
+					s3Upload(bucket: 'ss-scrumptious-artifacts', file: 'target/scrumptious_orders-0.0.1-SNAPSHOT.jar', path: 'order-backend.jar')
 				}
 			}
 		}
