@@ -13,7 +13,6 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 import lombok.AllArgsConstructor;
@@ -38,12 +37,8 @@ public class Order {
     private Customer customer;
 
     @ManyToOne
-    @JoinColumn(name = "restaurant_id", nullable = false)
+    @JoinColumn(name = "restaurant_id")
     private Restaurant restaurant;
-
-    @OneToOne
-    @JoinColumn(name = "delivery_id", referencedColumnName = "id")
-    private Delivery delivery;
 
     @OneToMany(mappedBy = "order", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     List<MenuitemOrder> menuitemOrders;
@@ -58,9 +53,10 @@ public class Order {
     private Float orderDiscount;
 
     @Column(name = "submited_at")
-    private ZonedDateTime submitedAt;
-
+    private ZonedDateTime submitedAt ;
+    
+    @Builder.Default
     @Column(name = "preparation_status")
-    private String preparationStatus;
+    private String preparationStatus = "Not placed";
 
 }

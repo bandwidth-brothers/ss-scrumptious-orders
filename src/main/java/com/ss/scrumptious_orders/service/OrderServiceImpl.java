@@ -1,13 +1,12 @@
 package com.ss.scrumptious_orders.service;
 
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import javax.transaction.Transactional;
 
 import com.ss.scrumptious_orders.dao.CustomerRepository;
-import com.ss.scrumptious_orders.dao.DeliveryRepository;
 import com.ss.scrumptious_orders.dao.MenuitemOrderRepository;
 import com.ss.scrumptious_orders.dao.MenuitemRepository;
 import com.ss.scrumptious_orders.dao.OrderRepository;
@@ -21,9 +20,7 @@ import com.ss.scrumptious_orders.entity.Menuitem;
 import com.ss.scrumptious_orders.entity.MenuitemOrder;
 import com.ss.scrumptious_orders.entity.MenuitemOrderKey;
 import com.ss.scrumptious_orders.entity.Order;
-import com.ss.scrumptious_orders.entity.Restaurant;
 import com.ss.scrumptious_orders.exception.NoSuchCustomerException;
-import com.ss.scrumptious_orders.exception.NoSuchDeliveryException;
 import com.ss.scrumptious_orders.exception.NoSuchMenuitemException;
 import com.ss.scrumptious_orders.exception.NoSuchMenuitemOrderException;
 import com.ss.scrumptious_orders.exception.NoSuchOrderException;
@@ -42,7 +39,6 @@ public class OrderServiceImpl implements OrderService {
     private final OrderRepository orderRepository;
     private final CustomerRepository customerRepository;
     private final RestaurantRepository restaurantRepository;
-    private final DeliveryRepository deliveryRepository;
     private final MenuitemRepository menuitemRepository;
     private final MenuitemOrderRepository menuitemOrderRepository;
 
@@ -61,24 +57,14 @@ public class OrderServiceImpl implements OrderService {
         Customer customer = customerRepository.findById(createOrderDto.getCustomerId())
                 .orElseThrow(() -> new NoSuchCustomerException(createOrderDto.getCustomerId()));
 
-        Restaurant restaurant = restaurantRepository.findById(createOrderDto.getRestaurantId())
-                .orElseThrow(() -> new NoSuchRestaurantException(createOrderDto.getRestaurantId()));
-
         Order order = Order.builder()
                 .customer(customer)
-                .restaurant(restaurant)
-                .preparationStatus("Preparing")
-                .requestedDeliveryTime(ZonedDateTime.now().plusHours(1))
                 .build();
 
         // setting values if they exist in the json
-        if (createOrderDto.getDeliveryId() != null) {
-            order.setDelivery(deliveryRepository.findById(createOrderDto.getDeliveryId())
-                    .orElseThrow(() -> new NoSuchDeliveryException(createOrderDto.getDeliveryId())));
-        }
-        if (createOrderDto.getDeliveryId() != null) {
-            order.setDelivery(deliveryRepository.findById(createOrderDto.getDeliveryId())
-                    .orElseThrow(() -> new NoSuchDeliveryException(createOrderDto.getDeliveryId())));
+        if (createOrderDto.getRestaurantId() != null) {
+            order.setRestaurant(restaurantRepository.findById(createOrderDto.getRestaurantId())
+                .orElseThrow(() -> new NoSuchRestaurantException(createOrderDto.getRestaurantId())));
         }
         if (createOrderDto.getRestaurantId() != null) {
             order.setRestaurant(restaurantRepository.findById(createOrderDto.getRestaurantId())
@@ -103,8 +89,8 @@ public class OrderServiceImpl implements OrderService {
         // need to save here before adding the menuitems because menuitems need a valid orderId
         order = orderRepository.save(order);
 
-        List<MenuitemOrder> menuitemOrders = new ArrayList<>();
         if(createOrderDto.getMenuitems() != null) {
+            List<MenuitemOrder> menuitemOrders = new ArrayList<>();
             for (CreateMenuitemOrderDto createMenuitemOrderDto : createOrderDto.getMenuitems()) {
                 menuitemOrders.add(addItemToOrder(order.getId(), createMenuitemOrderDto));
             }
@@ -117,7 +103,16 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public Order getOrderById(Long orderId) {
         log.trace("getOrderById orderId = " + orderId);
-        return orderRepository.findById(orderId).orElseThrow(() -> new NoSuchOrderException(orderId));
+        return orderRepository.findById(orderId).orElseThrow(
+            () -> new NoSuchOrderException(orderId));
+    }
+
+    @Override
+    public List<Order> getOrdersByCustomerId(UUID customerId) {
+        log.trace("getOrderByCustomerId customerId = " + customerId);
+        Customer customer = customerRepository.findById(customerId).orElseThrow(
+            () -> new NoSuchCustomerException(customerId));
+        return orderRepository.findByCustomer(customer);
     }
 
     @Transactional
@@ -128,15 +123,13 @@ public class OrderServiceImpl implements OrderService {
 
         if (updateOrderDto.getCustomerId() != null) {
             order.setCustomer(customerRepository.findById(updateOrderDto.getCustomerId())
-                    .orElseThrow(() -> new NoSuchCustomerException(updateOrderDto.getCustomerId())));
-        }
-        if (updateOrderDto.getDeliveryId() != null) {
-            order.setDelivery(deliveryRepository.findById(updateOrderDto.getDeliveryId())
-                    .orElseThrow(() -> new NoSuchDeliveryException(updateOrderDto.getDeliveryId())));
+                    .orElseThrow(
+                        () -> new NoSuchCustomerException(updateOrderDto.getCustomerId())));
         }
         if (updateOrderDto.getRestaurantId() != null) {
             order.setRestaurant(restaurantRepository.findById(updateOrderDto.getRestaurantId())
-                    .orElseThrow(() -> new NoSuchRestaurantException(updateOrderDto.getRestaurantId())));
+                    .orElseThrow(
+                        () -> new NoSuchRestaurantException(updateOrderDto.getRestaurantId())));
         }
         if (updateOrderDto.getConfirmationCode() != null) {
             order.setConfirmationCode(updateOrderDto.getConfirmationCode());
@@ -161,7 +154,7 @@ public class OrderServiceImpl implements OrderService {
             }
         }
 
-        orderRepository.save(order);
+        orderRepository.saveAndFlush(order);
     }
 
     @Override
@@ -187,7 +180,7 @@ public class OrderServiceImpl implements OrderService {
             menuitemOrder.setQuantity(createMenuitemOrderDto.getQuantity());
         }
 
-        return menuitemOrderRepository.save(menuitemOrder);
+        return menuitemOrderRepository.saveAndFlush(menuitemOrder);
     }
 
     @Override
@@ -197,7 +190,7 @@ public class OrderServiceImpl implements OrderService {
         MenuitemOrder menuitemOrder = menuitemOrderRepository.findById(new MenuitemOrderKey(menuitemId, orderId))
                 .orElseThrow(() -> new NoSuchMenuitemOrderException(new MenuitemOrderKey(menuitemId, orderId)));
         menuitemOrder.setQuantity(updateMenuitemOrderDto.getQuantity());
-        menuitemOrderRepository.save(menuitemOrder);
+        menuitemOrderRepository.saveAndFlush(menuitemOrder);
     }
 
     @Override
@@ -206,6 +199,17 @@ public class OrderServiceImpl implements OrderService {
 
         menuitemOrderRepository.findById(new MenuitemOrderKey(menuitemId, orderId))
                 .ifPresent(menuitemOrderRepository::delete);
+    }
+
+    @Transactional
+    @Override
+    public void removeAllItemsFromOrder(Long orderId) {
+        log.trace("removeItemFromOrder orderId = " + orderId);
+
+        // no need to get the entire order since jpa only looks for id here
+        Order order = new Order();
+        order.setId(orderId);
+        menuitemOrderRepository.deleteByOrder(order);
     }
 
 }

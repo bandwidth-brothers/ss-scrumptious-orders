@@ -17,7 +17,6 @@ public class UpdateOrderDto {
     // none of these are required
 
     private UUID customerId;
-    private Long deliveryId;
     private Long restaurantId;
 
     private String confirmationCode;

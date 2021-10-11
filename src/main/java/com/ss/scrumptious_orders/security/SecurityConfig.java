@@ -59,13 +59,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
     }
 
-    @Bean
-    CorsConfigurationSource corsConfigurationSource() {
+    // @Bean
+    // CorsConfigurationSource corsConfigurationSource() {
 
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", new CorsConfiguration().applyPermitDefaultValues());
-        return source;
-    }
+    //     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+    //     source.registerCorsConfiguration("/**", new CorsConfiguration().applyPermitDefaultValues());
+    //     return source;
+    // }
 
 	@Bean PasswordEncoder passwordEncoder(){ 
 		return new BCryptPasswordEncoder();

@@ -1,5 +1,7 @@
 package com.ss.scrumptious_orders.security;
 
+import java.util.UUID;
+
 import com.ss.scrumptious_orders.dao.OrderRepository;
 import com.ss.scrumptious_orders.dto.CreateOrderDto;
 import com.ss.scrumptious_orders.dto.UpdateOrderDto;
@@ -41,4 +43,13 @@ public class CustomerAuthenticationManager {
             return false;
           }
     }
+
+    public boolean customerIdMatches(Authentication authentication, UUID customerId) {
+      try {
+        JwtPrincipalModel principal = (JwtPrincipalModel) authentication.getPrincipal();
+        return principal.getUserId().equals(customerId);
+      } catch (ClassCastException ex) {
+        return false;
+      }
+  }
 }

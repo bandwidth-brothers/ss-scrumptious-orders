@@ -1,6 +1,7 @@
 package com.ss.scrumptious_orders.service;
 
 import java.util.List;
+import java.util.UUID;
 
 import com.ss.scrumptious_orders.dto.CreateMenuitemOrderDto;
 import com.ss.scrumptious_orders.dto.CreateOrderDto;
@@ -15,6 +16,8 @@ public interface OrderService {
 
     Order getOrderById(Long orderId);
 
+    List<Order> getOrdersByCustomerId(UUID customerId);
+
     Order createNewOrder(CreateOrderDto createOrderDto);
 
     void updateOrder(Long orderId, UpdateOrderDto updateOrderDto);
@@ -26,5 +29,7 @@ public interface OrderService {
     void editItemQuantity(Long orderId, Long menuitemId, UpdateMenuitemOrderDto updateMenuitemOrderDto);
 
     void removeItemFromOrder(Long orderId, Long menuitemId);
+
+    void removeAllItemsFromOrder(Long orderId);
 
 }
