@@ -1,6 +1,5 @@
 package com.ss.scrumptious_orders.service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -13,7 +12,6 @@ import com.ss.scrumptious_orders.dao.OrderRepository;
 import com.ss.scrumptious_orders.dao.RestaurantRepository;
 import com.ss.scrumptious_orders.dto.CreateMenuitemOrderDto;
 import com.ss.scrumptious_orders.dto.CreateOrderDto;
-import com.ss.scrumptious_orders.dto.UpdateMenuitemOrderDto;
 import com.ss.scrumptious_orders.dto.UpdateOrderDto;
 import com.ss.scrumptious_orders.entity.Customer;
 import com.ss.scrumptious_orders.entity.Menuitem;
@@ -90,11 +88,9 @@ public class OrderServiceImpl implements OrderService {
         order = orderRepository.save(order);
 
         if(createOrderDto.getMenuitems() != null) {
-            List<MenuitemOrder> menuitemOrders = new ArrayList<>();
             for (CreateMenuitemOrderDto createMenuitemOrderDto : createOrderDto.getMenuitems()) {
-                menuitemOrders.add(addItemToOrder(order.getId(), createMenuitemOrderDto));
+                addItemToOrder(order.getId(), createMenuitemOrderDto);
             }
-            order.setMenuitemOrders(menuitemOrders);
         }
 
         return order;
@@ -150,7 +146,7 @@ public class OrderServiceImpl implements OrderService {
         if(updateOrderDto.getMenuitems() != null) {
             for (CreateMenuitemOrderDto createMenuitemOrderDto : updateOrderDto.getMenuitems()) {
                 editItemQuantity(orderId, createMenuitemOrderDto.getMenuitemId(), 
-                        new UpdateMenuitemOrderDto(createMenuitemOrderDto.getQuantity()));
+                        createMenuitemOrderDto.getQuantity());
             }
         }
 
@@ -184,12 +180,12 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public void editItemQuantity(Long orderId, Long menuitemId, UpdateMenuitemOrderDto updateMenuitemOrderDto) {
+    public void editItemQuantity(Long orderId, Long menuitemId, Long quantity) {
         log.trace("editItemQuantity orderId = " + orderId + "menuitemId = " + menuitemId);
 
         MenuitemOrder menuitemOrder = menuitemOrderRepository.findById(new MenuitemOrderKey(menuitemId, orderId))
                 .orElseThrow(() -> new NoSuchMenuitemOrderException(new MenuitemOrderKey(menuitemId, orderId)));
-        menuitemOrder.setQuantity(updateMenuitemOrderDto.getQuantity());
+        menuitemOrder.setQuantity(quantity);
         menuitemOrderRepository.saveAndFlush(menuitemOrder);
     }
 

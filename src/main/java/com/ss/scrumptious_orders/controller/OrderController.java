@@ -9,7 +9,6 @@ import javax.validation.Valid;
 
 import com.ss.scrumptious_orders.dto.CreateMenuitemOrderDto;
 import com.ss.scrumptious_orders.dto.CreateOrderDto;
-import com.ss.scrumptious_orders.dto.UpdateMenuitemOrderDto;
 import com.ss.scrumptious_orders.dto.UpdateOrderDto;
 import com.ss.scrumptious_orders.entity.MenuitemOrder;
 import com.ss.scrumptious_orders.entity.Order;
@@ -94,7 +93,7 @@ public class OrderController {
     @PreAuthorize("hasRole('ADMIN')"
     + " OR @customerAuthenticationManager.customerIdMatches(authentication, #orderId)")
     @DeleteMapping(value = "/{orderId}")
-    public ResponseEntity<Void> deletOrder(@PathVariable Long orderId) {
+    public ResponseEntity<Void> deleteOrder(@PathVariable Long orderId) {
         log.info("DELETE Order id = " + orderId);
         orderService.deleteOrder(orderId);
 
@@ -104,11 +103,13 @@ public class OrderController {
     @PreAuthorize("hasRole('ADMIN')"
     + " OR @customerAuthenticationManager.customerIdMatches(authentication, #orderId)")
     @PostMapping(value = "/{orderId}", consumes = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE })
-    public ResponseEntity<MenuitemOrder> createNewMenuitemOrder(
+    public ResponseEntity<Void> createNewMenuitemOrder(
             @Valid @RequestBody CreateMenuitemOrderDto createMenuitemOrderDto, @PathVariable Long orderId) {
         log.info("POST menuitemOrder");
         MenuitemOrder menuitemOrder = orderService.addItemToOrder(orderId, createMenuitemOrderDto);
-        return ResponseEntity.ok(menuitemOrder);
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{menuitemOrderId}")
+        .buildAndExpand(menuitemOrder.getId()).toUri();
+        return ResponseEntity.created(location).build();
     }
 
     @PreAuthorize("hasRole('ADMIN')"
@@ -116,11 +117,11 @@ public class OrderController {
     @PutMapping(value = "/{orderId}/menuitems/{menuitemId}", consumes = { MediaType.APPLICATION_JSON_VALUE,
             MediaType.APPLICATION_XML_VALUE })
     public ResponseEntity<MenuitemOrder> updateExistingMenuitemOrder(
-            @Valid @RequestBody UpdateMenuitemOrderDto updateMenuitemOrderDto, @PathVariable Long orderId,
+            @Valid @RequestBody Long quantity, @PathVariable Long orderId,
             @PathVariable Long menuitemId) {
         log.info("POST menuitemOrder orderId = " + orderId + ", menuitemId = " + menuitemId);
 
-        orderService.editItemQuantity(orderId, menuitemId, updateMenuitemOrderDto);
+        orderService.editItemQuantity(orderId, menuitemId, quantity);
         return ResponseEntity.noContent().build();
     }
 

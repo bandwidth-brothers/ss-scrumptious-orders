@@ -5,7 +5,6 @@ import java.util.UUID;
 
 import com.ss.scrumptious_orders.dto.CreateMenuitemOrderDto;
 import com.ss.scrumptious_orders.dto.CreateOrderDto;
-import com.ss.scrumptious_orders.dto.UpdateMenuitemOrderDto;
 import com.ss.scrumptious_orders.dto.UpdateOrderDto;
 import com.ss.scrumptious_orders.entity.MenuitemOrder;
 import com.ss.scrumptious_orders.entity.Order;
@@ -26,7 +25,7 @@ public interface OrderService {
 
     MenuitemOrder addItemToOrder(Long orderId, CreateMenuitemOrderDto createMenuitemOrderDto);
 
-    void editItemQuantity(Long orderId, Long menuitemId, UpdateMenuitemOrderDto updateMenuitemOrderDto);
+    void editItemQuantity(Long orderId, Long menuitemId, Long quantity);
 
     void removeItemFromOrder(Long orderId, Long menuitemId);
 
