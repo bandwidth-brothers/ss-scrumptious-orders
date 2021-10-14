@@ -19,13 +19,13 @@ public interface OrderService {
 
     Order createNewOrder(CreateOrderDto createOrderDto);
 
-    void updateOrder(Long orderId, UpdateOrderDto updateOrderDto);
+    Order updateOrder(Long orderId, UpdateOrderDto updateOrderDto);
 
     void deleteOrder(Long orderId);
 
     MenuitemOrder addItemToOrder(Long orderId, CreateMenuitemOrderDto createMenuitemOrderDto);
 
-    void editItemQuantity(Long orderId, Long menuitemId, Long quantity);
+    MenuitemOrder editItemQuantity(Long orderId, Long menuitemId, Long quantity);
 
     void removeItemFromOrder(Long orderId, Long menuitemId);
 

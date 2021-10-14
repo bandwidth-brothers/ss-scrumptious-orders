@@ -32,7 +32,6 @@ import com.ss.scrumptious_orders.service.OrderService;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,13 +41,11 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-@RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 public class OrderControllerTests {
 
@@ -208,6 +205,14 @@ public class OrderControllerTests {
             mvc.perform(get("/orders/customers/" + mockCustomer.getId()).header(securityConstants.getHEADER_STRING(), getJwt(user)))
                 .andExpect(status().isForbidden());
         }
+    }
+
+    @Test
+    void getOrderByCustomerIdEmptyTest() throws Exception {
+        when(orderService.getOrdersByCustomerId(mockCustomer.getId())).thenReturn(Collections.emptyList());
+        
+        mvc.perform(get("/orders/customers/" + mockCustomer.getId()).header(securityConstants.getHEADER_STRING(), getJwt(MockUser.ADMIN)))
+            .andExpect(status().isNoContent());        
     }
 
     @Test

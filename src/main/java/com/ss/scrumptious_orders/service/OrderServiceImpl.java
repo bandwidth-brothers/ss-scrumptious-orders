@@ -64,10 +64,6 @@ public class OrderServiceImpl implements OrderService {
             order.setRestaurant(restaurantRepository.findById(createOrderDto.getRestaurantId())
                 .orElseThrow(() -> new NoSuchRestaurantException(createOrderDto.getRestaurantId())));
         }
-        if (createOrderDto.getRestaurantId() != null) {
-            order.setRestaurant(restaurantRepository.findById(createOrderDto.getRestaurantId())
-                    .orElseThrow(() -> new NoSuchRestaurantException(createOrderDto.getRestaurantId())));
-        }
         if (createOrderDto.getConfirmationCode() != null) {
             order.setConfirmationCode(createOrderDto.getConfirmationCode());
         }
@@ -85,7 +81,7 @@ public class OrderServiceImpl implements OrderService {
         }
 
         // need to save here before adding the menuitems because menuitems need a valid orderId
-        order = orderRepository.save(order);
+        order = orderRepository.saveAndFlush(order);
 
         if(createOrderDto.getMenuitems() != null) {
             for (CreateMenuitemOrderDto createMenuitemOrderDto : createOrderDto.getMenuitems()) {
@@ -99,33 +95,31 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public Order getOrderById(Long orderId) {
         log.trace("getOrderById orderId = " + orderId);
-        return orderRepository.findById(orderId).orElseThrow(
-            () -> new NoSuchOrderException(orderId));
+        return orderRepository.findById(orderId)
+            .orElseThrow(() -> new NoSuchOrderException(orderId));
     }
 
     @Override
     public List<Order> getOrdersByCustomerId(UUID customerId) {
         log.trace("getOrderByCustomerId customerId = " + customerId);
-        Customer customer = customerRepository.findById(customerId).orElseThrow(
-            () -> new NoSuchCustomerException(customerId));
+        Customer customer = customerRepository.findById(customerId)
+            .orElseThrow(() -> new NoSuchCustomerException(customerId));
         return orderRepository.findByCustomer(customer);
     }
 
     @Transactional
     @Override
-    public void updateOrder(Long orderId, UpdateOrderDto updateOrderDto) {
+    public Order updateOrder(Long orderId, UpdateOrderDto updateOrderDto) {
         log.trace("updateOrder orderId = " + orderId);
         Order order = getOrderById(orderId);
 
         if (updateOrderDto.getCustomerId() != null) {
             order.setCustomer(customerRepository.findById(updateOrderDto.getCustomerId())
-                    .orElseThrow(
-                        () -> new NoSuchCustomerException(updateOrderDto.getCustomerId())));
+                    .orElseThrow(() -> new NoSuchCustomerException(updateOrderDto.getCustomerId())));
         }
         if (updateOrderDto.getRestaurantId() != null) {
             order.setRestaurant(restaurantRepository.findById(updateOrderDto.getRestaurantId())
-                    .orElseThrow(
-                        () -> new NoSuchRestaurantException(updateOrderDto.getRestaurantId())));
+                    .orElseThrow(() -> new NoSuchRestaurantException(updateOrderDto.getRestaurantId())));
         }
         if (updateOrderDto.getConfirmationCode() != null) {
             order.setConfirmationCode(updateOrderDto.getConfirmationCode());
@@ -150,7 +144,7 @@ public class OrderServiceImpl implements OrderService {
             }
         }
 
-        orderRepository.saveAndFlush(order);
+        return orderRepository.saveAndFlush(order);
     }
 
     @Override
@@ -180,13 +174,14 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public void editItemQuantity(Long orderId, Long menuitemId, Long quantity) {
+    public MenuitemOrder editItemQuantity(Long orderId, Long menuitemId, Long quantity) {
         log.trace("editItemQuantity orderId = " + orderId + "menuitemId = " + menuitemId);
 
         MenuitemOrder menuitemOrder = menuitemOrderRepository.findById(new MenuitemOrderKey(menuitemId, orderId))
                 .orElseThrow(() -> new NoSuchMenuitemOrderException(new MenuitemOrderKey(menuitemId, orderId)));
         menuitemOrder.setQuantity(quantity);
-        menuitemOrderRepository.saveAndFlush(menuitemOrder);
+
+        return menuitemOrderRepository.saveAndFlush(menuitemOrder);
     }
 
     @Override
