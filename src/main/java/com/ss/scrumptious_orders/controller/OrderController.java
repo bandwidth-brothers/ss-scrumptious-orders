@@ -1,20 +1,29 @@
 package com.ss.scrumptious_orders.controller;
 
 import java.net.URI;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.util.JSONPObject;
+import com.google.gson.Gson;
 import com.ss.scrumptious_orders.dto.CreateMenuitemOrderDto;
 import com.ss.scrumptious_orders.dto.CreateOrderDto;
 import com.ss.scrumptious_orders.dto.UpdateMenuitemOrderDto;
 import com.ss.scrumptious_orders.dto.UpdateOrderDto;
 import com.ss.scrumptious_orders.entity.MenuitemOrder;
 import com.ss.scrumptious_orders.entity.Order;
+import com.ss.scrumptious_orders.payment.StripeService;
 import com.ss.scrumptious_orders.service.OrderService;
 
+import com.stripe.Stripe;
+import com.stripe.exception.StripeException;
+import com.stripe.model.Charge;
+import com.stripe.model.checkout.Session;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -30,6 +39,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import springfox.documentation.spring.web.json.Json;
 
 @Slf4j
 @RestController
@@ -37,7 +47,13 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class OrderController {
 
+    @Value("${STRIPE_SECRET_KEY}")
+    String secretKey;
+
     private final OrderService orderService;
+    private final StripeService stripeService;
+
+
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping(produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE })
@@ -142,5 +158,18 @@ public class OrderController {
         orderService.removeAllItemsFromOrder(orderId);
 
         return ResponseEntity.noContent().build();
+    }
+
+    @PreAuthorize("hasRole('ADMIN')"
+            + " OR @customerAuthenticationManager.customerIdMatches(authentication, #orderId)")
+    @PutMapping(value = "/{orderId}/payment", consumes = { MediaType.APPLICATION_JSON_VALUE,
+            MediaType.APPLICATION_XML_VALUE })
+    public ResponseEntity<String> chargeOrder(@RequestBody String paymentToken,
+                                                    @PathVariable Long orderId){
+        log.info("PUT Order id = " + orderId + " token: " + paymentToken);
+        String confirmationCode = orderService.placeOrder(orderId, paymentToken);
+        log.info("orderId: "  + orderId + " confirmationCode: " + confirmationCode);
+        Gson gson = new Gson();
+        return ResponseEntity.ok(gson.toJson(confirmationCode));
     }
 }

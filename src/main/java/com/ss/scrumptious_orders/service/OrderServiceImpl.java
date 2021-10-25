@@ -1,31 +1,28 @@
 package com.ss.scrumptious_orders.service;
 
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 import javax.transaction.Transactional;
 
-import com.ss.scrumptious_orders.dao.CustomerRepository;
-import com.ss.scrumptious_orders.dao.MenuitemOrderRepository;
-import com.ss.scrumptious_orders.dao.MenuitemRepository;
-import com.ss.scrumptious_orders.dao.OrderRepository;
-import com.ss.scrumptious_orders.dao.RestaurantRepository;
+import com.ss.scrumptious_orders.dao.*;
 import com.ss.scrumptious_orders.dto.CreateMenuitemOrderDto;
 import com.ss.scrumptious_orders.dto.CreateOrderDto;
 import com.ss.scrumptious_orders.dto.UpdateMenuitemOrderDto;
 import com.ss.scrumptious_orders.dto.UpdateOrderDto;
-import com.ss.scrumptious_orders.entity.Customer;
-import com.ss.scrumptious_orders.entity.Menuitem;
-import com.ss.scrumptious_orders.entity.MenuitemOrder;
-import com.ss.scrumptious_orders.entity.MenuitemOrderKey;
-import com.ss.scrumptious_orders.entity.Order;
+import com.ss.scrumptious_orders.entity.*;
 import com.ss.scrumptious_orders.exception.NoSuchCustomerException;
 import com.ss.scrumptious_orders.exception.NoSuchMenuitemException;
 import com.ss.scrumptious_orders.exception.NoSuchMenuitemOrderException;
 import com.ss.scrumptious_orders.exception.NoSuchOrderException;
 import com.ss.scrumptious_orders.exception.NoSuchRestaurantException;
 
+import com.ss.scrumptious_orders.payment.StripeService;
+import com.stripe.exception.StripeException;
+import com.stripe.model.Charge;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
@@ -41,6 +38,8 @@ public class OrderServiceImpl implements OrderService {
     private final RestaurantRepository restaurantRepository;
     private final MenuitemRepository menuitemRepository;
     private final MenuitemOrderRepository menuitemOrderRepository;
+    private final StripeService stripeService;
+    private final PaymentRepository paymentRepository;
 
     @Override
     public List<Order> getAllOrders() {
@@ -149,7 +148,7 @@ public class OrderServiceImpl implements OrderService {
 
         if(updateOrderDto.getMenuitems() != null) {
             for (CreateMenuitemOrderDto createMenuitemOrderDto : updateOrderDto.getMenuitems()) {
-                editItemQuantity(orderId, createMenuitemOrderDto.getMenuitemId(), 
+                editItemQuantity(orderId, createMenuitemOrderDto.getMenuitemId(),
                         new UpdateMenuitemOrderDto(createMenuitemOrderDto.getQuantity()));
             }
         }
@@ -210,6 +209,46 @@ public class OrderServiceImpl implements OrderService {
         Order order = new Order();
         order.setId(orderId);
         menuitemOrderRepository.deleteByOrder(order);
+    }
+
+    @Transactional
+    @Override
+    public String placeOrder(Long orderId, String paymentToken) {
+        String confirmationCode = "";
+        try{
+            Order order = orderRepository.findById(orderId).orElseThrow(() -> new NoSuchOrderException(orderId));
+            Integer cost = (int) (getTotalCost(order) * (1 - order.getOrderDiscount()) * 100) ;
+            Charge charge = stripeService.charge(orderId, cost, paymentToken);
+            log.info("charge: " + charge.getPaymentMethod() + " id: " + charge.getId());
+            if (charge.getId() != null){
+
+                Payment pay = Payment.builder().customer(order.getCustomer()).name(charge.getPaymentMethod()).stripeId(charge.getId()).paymentStatus("paid").build();
+                paymentRepository.save(pay);
+                order.setConfirmationCode(UUID.randomUUID().toString());
+                order.setSubmitedAt(ZonedDateTime.now());
+                order.setPreparationStatus("ORDER PLACED ");
+                orderRepository.save(order);
+            }
+            confirmationCode = order.getConfirmationCode();
+            return confirmationCode;
+
+        }catch (StripeException stripeException){
+            log.error("orderId: " + orderId + " --stripeException: " + stripeException);
+            return confirmationCode;
+        }
+    }
+
+    public double getTotalCost(Order order){
+
+        double sum = order.getMenuitemOrders().stream().mapToDouble(o ->
+                o.getMenuitem().getPrice() * (1 - o.getMenuitem().getDiscount()) * o.getQuantity()
+        ).sum();
+        return  sum;
+
+//        log.info("sum: " + sum);
+//        int total = (int) (sum * (1 - order.getOrderDiscount()) * 100);
+//        log.info("tatal: " + total);
+//        return total;
     }
 
 }
