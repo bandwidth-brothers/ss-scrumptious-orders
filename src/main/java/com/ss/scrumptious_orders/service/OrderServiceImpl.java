@@ -244,11 +244,6 @@ public class OrderServiceImpl implements OrderService {
                 o.getMenuitem().getPrice() * (1 - o.getMenuitem().getDiscount()) * o.getQuantity()
         ).sum();
         return  sum;
-
-//        log.info("sum: " + sum);
-//        int total = (int) (sum * (1 - order.getOrderDiscount()) * 100);
-//        log.info("tatal: " + total);
-//        return total;
     }
 
 }
