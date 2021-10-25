@@ -21,16 +21,6 @@ public class StripeService {
         Stripe.apiKey = secretKey;
     }
 
-    public Charge charge(ChargeRequest chargeRequest)
-            throws StripeException{
-        Map<String, Object> chargeParams = new HashMap<>();
-        chargeParams.put("amount", chargeRequest.getAmount());
-        chargeParams.put("currency", chargeRequest.getCurrency());
-        chargeParams.put("description", chargeRequest.getDescription());
-        chargeParams.put("source", chargeRequest.getStripeToken());
-        return Charge.create(chargeParams);
-    }
-
     public Charge charge(Long orderId, Integer totalCost, String token)
             throws StripeException{
         Map<String, Object> chargeParams = new HashMap<>();
