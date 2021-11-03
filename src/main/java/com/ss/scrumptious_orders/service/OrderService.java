@@ -31,4 +31,5 @@ public interface OrderService {
 
     void removeAllItemsFromOrder(Long orderId);
 
+    String placeOrder(Long orderId, String paymentToken);
 }
