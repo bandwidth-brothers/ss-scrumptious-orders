@@ -50,7 +50,30 @@ public class OrderController {
     }
 
     @PreAuthorize("hasRole('ADMIN')"
-        + " OR @customerAuthenticationManager.customerIdMatches(authentication, #orderId)")
+            + " OR @ownerAuthenticationManager.ownerIdMatches(authentication, #ownerId)")
+    @GetMapping(value = "owners/{ownerId}/restaurants", produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE })
+    public ResponseEntity<List<Order>> getAllOrdersByOwner(@PathVariable UUID ownerId){
+    	List<Order> orders = orderService.getAllOrdersByOwner(ownerId);
+    	if (orders.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(orders);
+    }
+    
+    @PreAuthorize("hasRole('ADMIN')"
+            + " OR @ownerAuthenticationManager.ownerIdMatches(authentication, #restaurantId, #ownerId)")
+    @GetMapping(value = "owners/{ownerId}/restaurants/{restaurantId}", produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE })
+    public ResponseEntity<List<Order>> getAllOrdersByRestaurant(@PathVariable Long restaurantId, @PathVariable UUID ownerId){
+    	List<Order> orders = orderService.getAllOrdersByRestaurant(restaurantId);
+    	if (orders.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(orders);
+    }
+    
+    @PreAuthorize("hasRole('ADMIN')"
+        + " OR @customerAuthenticationManager.customerIdMatches(authentication, #orderId)"
+        + " OR @ownerAuthenticationManager.ownerIdMatches(authentication, #orderId)")
     @GetMapping(value = "/{orderId}", produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE })
     public ResponseEntity<Order> getOrderById(@PathVariable Long orderId) {
         log.info("Get Order id = " + orderId);
@@ -81,7 +104,8 @@ public class OrderController {
     }
 
     @PreAuthorize("hasRole('ADMIN')"
-    + " OR @customerAuthenticationManager.customerIdMatches(authentication, #orderId)")
+    + " OR @customerAuthenticationManager.customerIdMatches(authentication, #orderId)"
+    + " OR @ownerAuthenticationManager.ownerIdMatches(authentication, #orderId)")
     @PutMapping(value = "/{orderId}", consumes = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE })
     public ResponseEntity<Void> updateExistingOrder(@Valid @RequestBody UpdateOrderDto updateOrderDto,
             @PathVariable Long orderId) {

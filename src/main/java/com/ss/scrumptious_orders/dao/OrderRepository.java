@@ -2,11 +2,12 @@ package com.ss.scrumptious_orders.dao;
 
 import java.util.List;
 
-import com.ss.scrumptious_orders.entity.Customer;
-import com.ss.scrumptious_orders.entity.Order;
-
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+
+import com.ss.scrumptious_orders.entity.Customer;
+import com.ss.scrumptious_orders.entity.Order;
+import com.ss.scrumptious_orders.entity.Restaurant;
 
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Long> {
@@ -19,4 +20,5 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
      */
     List<Order> findByCustomer(Customer customer);
 
+    List<Order> findByRestaurant(Restaurant restaurant);
 }

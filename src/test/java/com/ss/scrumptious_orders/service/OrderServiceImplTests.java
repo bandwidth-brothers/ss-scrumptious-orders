@@ -14,6 +14,7 @@ import com.ss.scrumptious_orders.dao.CustomerRepository;
 import com.ss.scrumptious_orders.dao.MenuitemOrderRepository;
 import com.ss.scrumptious_orders.dao.MenuitemRepository;
 import com.ss.scrumptious_orders.dao.OrderRepository;
+import com.ss.scrumptious_orders.dao.RestaurantOwnerRepository;
 import com.ss.scrumptious_orders.dao.RestaurantRepository;
 import com.ss.scrumptious_orders.dto.CreateMenuitemOrderDto;
 import com.ss.scrumptious_orders.dto.CreateOrderDto;
@@ -41,7 +42,8 @@ public class OrderServiceImplTests {
     RestaurantRepository restaurantRepository = Mockito.mock(RestaurantRepository.class);
     MenuitemRepository menuitemRepository = Mockito.mock(MenuitemRepository.class);
     MenuitemOrderRepository menuitemOrderRepository = Mockito.mock(MenuitemOrderRepository.class);
-    
+    RestaurantOwnerRepository restaurantOwnerRepository = Mockito.mock(RestaurantOwnerRepository.class);
+
     private static Customer mockCustomer;
     private static Restaurant mockRestaurant;
     private static Order mockMaxOrder;
@@ -50,7 +52,7 @@ public class OrderServiceImplTests {
     private static MenuitemOrder mockMenuitemOrder;
     private static CreateMenuitemOrderDto mockCreateMenuitemOrderDto;
 
-    private final OrderService orderService = new OrderServiceImpl(orderRepository, customerRepository, restaurantRepository, menuitemRepository, menuitemOrderRepository);
+    private final OrderService orderService = new OrderServiceImpl(orderRepository, customerRepository, restaurantRepository, menuitemRepository, menuitemOrderRepository, restaurantOwnerRepository);
 
     @BeforeAll
     static void beforeAll() {
@@ -76,7 +78,7 @@ public class OrderServiceImplTests {
             .preparationStatus("testing")
             .confirmationCode("349398dfsjmgldk")
             .orderDiscount(0.10f)
-            .submitedAt(ZonedDateTime.now())
+            .submittedAt(ZonedDateTime.now())
             .requestedDeliveryTime(ZonedDateTime.now().plusHours(1))
             .build();
             

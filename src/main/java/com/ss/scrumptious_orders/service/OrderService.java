@@ -31,4 +31,8 @@ public interface OrderService {
 
     void removeAllItemsFromOrder(Long orderId);
 
+	List<Order> getAllOrdersByOwner(UUID ownerId);
+
+	List<Order> getAllOrdersByRestaurant(Long restaurantId);
+
 }
