@@ -23,6 +23,7 @@ import com.stripe.exception.StripeException;
 import com.stripe.model.Charge;
 import com.stripe.model.checkout.Session;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -44,10 +45,11 @@ import springfox.documentation.spring.web.json.Json;
 @RestController
 @RequestMapping("/orders")
 @RequiredArgsConstructor
+@PropertySource("classpath:stripe-config.properties")
 public class OrderController {
 
-    //@Value("${STRIPE_SECRET_KEY}")
-    String secretKey = "";
+    @Value("${STRIPE_SECRET_KEY}")
+    String secretKey;
 
     private final OrderService orderService;
     private final StripeService stripeService;
