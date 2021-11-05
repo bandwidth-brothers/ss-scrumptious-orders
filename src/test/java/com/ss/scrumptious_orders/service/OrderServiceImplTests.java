@@ -10,10 +10,18 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
+
 import com.ss.scrumptious_orders.dao.CustomerRepository;
 import com.ss.scrumptious_orders.dao.MenuitemOrderRepository;
 import com.ss.scrumptious_orders.dao.MenuitemRepository;
 import com.ss.scrumptious_orders.dao.OrderRepository;
+import com.ss.scrumptious_orders.dao.PaymentRepository;
 import com.ss.scrumptious_orders.dao.RestaurantOwnerRepository;
 import com.ss.scrumptious_orders.dao.RestaurantRepository;
 import com.ss.scrumptious_orders.dto.CreateMenuitemOrderDto;
@@ -25,13 +33,7 @@ import com.ss.scrumptious_orders.entity.MenuitemOrder;
 import com.ss.scrumptious_orders.entity.MenuitemOrderKey;
 import com.ss.scrumptious_orders.entity.Order;
 import com.ss.scrumptious_orders.entity.Restaurant;
-
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
+import com.ss.scrumptious_orders.payment.StripeService;
 
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 public class OrderServiceImplTests {
@@ -43,6 +45,8 @@ public class OrderServiceImplTests {
     MenuitemRepository menuitemRepository = Mockito.mock(MenuitemRepository.class);
     MenuitemOrderRepository menuitemOrderRepository = Mockito.mock(MenuitemOrderRepository.class);
     RestaurantOwnerRepository restaurantOwnerRepository = Mockito.mock(RestaurantOwnerRepository.class);
+    StripeService stripeService = Mockito.mock(StripeService.class);
+    PaymentRepository paymentRepository = Mockito.mock(PaymentRepository.class);
 
     private static Customer mockCustomer;
     private static Restaurant mockRestaurant;
@@ -52,7 +56,7 @@ public class OrderServiceImplTests {
     private static MenuitemOrder mockMenuitemOrder;
     private static CreateMenuitemOrderDto mockCreateMenuitemOrderDto;
 
-    private final OrderService orderService = new OrderServiceImpl(orderRepository, customerRepository, restaurantRepository, menuitemRepository, menuitemOrderRepository, restaurantOwnerRepository);
+    private final OrderService orderService = new OrderServiceImpl(orderRepository, customerRepository, restaurantRepository, menuitemRepository, menuitemOrderRepository, restaurantOwnerRepository, stripeService, paymentRepository);
 
     @BeforeAll
     static void beforeAll() {
