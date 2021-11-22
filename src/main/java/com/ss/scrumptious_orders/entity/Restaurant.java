@@ -1,11 +1,17 @@
 package com.ss.scrumptious_orders.entity;
 
+import com.ss.scrumptious_orders.entity.RestaurantOwner;
+
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -40,4 +46,7 @@ public class Restaurant {
 
     private String picture;
 
+    @JsonIgnore
+    @ManyToOne
+    private RestaurantOwner owner;
 }

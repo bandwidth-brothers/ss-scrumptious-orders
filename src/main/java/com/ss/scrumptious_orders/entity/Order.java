@@ -51,10 +51,11 @@ public class Order {
 
     @Builder.Default
     @Column(name = "order_discount")
-    private Float orderDiscount = 0.00f;
+	private Float orderDiscount = 0.00f;
 
     @Column(name = "submited_at")
-    private ZonedDateTime submitedAt ;
+    private ZonedDateTime submittedAt ;
+    
 
     @Builder.Default
     @Column(name = "preparation_status")

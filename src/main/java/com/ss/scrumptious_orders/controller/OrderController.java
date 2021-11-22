@@ -23,6 +23,7 @@ import com.stripe.exception.StripeException;
 import com.stripe.model.Charge;
 import com.stripe.model.checkout.Session;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -44,6 +45,7 @@ import springfox.documentation.spring.web.json.Json;
 @RestController
 @RequestMapping("/orders")
 @RequiredArgsConstructor
+@PropertySource("classpath:stripe-config.properties")
 public class OrderController {
 
     @Value("${STRIPE_SECRET_KEY}")
@@ -66,7 +68,30 @@ public class OrderController {
     }
 
     @PreAuthorize("hasRole('ADMIN')"
-        + " OR @customerAuthenticationManager.customerIdMatches(authentication, #orderId)")
+            + " OR @ownerAuthenticationManager.ownerIdMatches(authentication, #ownerId)")
+    @GetMapping(value = "owners/{ownerId}/restaurants", produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE })
+    public ResponseEntity<List<Order>> getAllOrdersByOwner(@PathVariable UUID ownerId){
+    	List<Order> orders = orderService.getAllOrdersByOwner(ownerId);
+    	if (orders.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(orders);
+    }
+    
+    @PreAuthorize("hasRole('ADMIN')"
+            + " OR @ownerAuthenticationManager.ownerIdMatches(authentication, #restaurantId, #ownerId)")
+    @GetMapping(value = "owners/{ownerId}/restaurants/{restaurantId}", produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE })
+    public ResponseEntity<List<Order>> getAllOrdersByRestaurant(@PathVariable Long restaurantId, @PathVariable UUID ownerId){
+    	List<Order> orders = orderService.getAllOrdersByRestaurant(restaurantId);
+    	if (orders.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(orders);
+    }
+    
+    @PreAuthorize("hasRole('ADMIN')"
+        + " OR @customerAuthenticationManager.customerIdMatches(authentication, #orderId)"
+        + " OR @ownerAuthenticationManager.ownerIdMatches(authentication, #orderId)")
     @GetMapping(value = "/{orderId}", produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE })
     public ResponseEntity<Order> getOrderById(@PathVariable Long orderId) {
         log.info("Get Order id = " + orderId);
@@ -97,7 +122,8 @@ public class OrderController {
     }
 
     @PreAuthorize("hasRole('ADMIN')"
-    + " OR @customerAuthenticationManager.customerIdMatches(authentication, #orderId)")
+    + " OR @customerAuthenticationManager.customerIdMatches(authentication, #orderId)"
+    + " OR @ownerAuthenticationManager.ownerIdMatches(authentication, #orderId)")
     @PutMapping(value = "/{orderId}", consumes = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE })
     public ResponseEntity<Void> updateExistingOrder(@Valid @RequestBody UpdateOrderDto updateOrderDto,
             @PathVariable Long orderId) {

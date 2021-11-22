@@ -1,16 +1,15 @@
 package com.ss.scrumptious_orders.dao;
 
-import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import com.ss.scrumptious_orders.entity.Restaurant;
 import com.ss.scrumptious_orders.entity.RestaurantOwner;
 
 @Repository
-public interface RestaurantRepository extends JpaRepository<Restaurant, Long> {
+public interface RestaurantOwnerRepository extends JpaRepository<RestaurantOwner, UUID>{
 
-	List<Restaurant> findByOwner(RestaurantOwner owner);
-
+    Optional<RestaurantOwner> findByEmail(String email);
 }

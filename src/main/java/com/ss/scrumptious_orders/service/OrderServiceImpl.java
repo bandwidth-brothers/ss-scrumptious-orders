@@ -1,7 +1,7 @@
 package com.ss.scrumptious_orders.service;
 
 
-import java.time.LocalDateTime;
+
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -9,21 +9,34 @@ import java.util.UUID;
 
 import javax.transaction.Transactional;
 
-import com.ss.scrumptious_orders.dao.*;
+import org.springframework.stereotype.Service;
+
+import com.ss.scrumptious_orders.dao.CustomerRepository;
+import com.ss.scrumptious_orders.dao.MenuitemOrderRepository;
+import com.ss.scrumptious_orders.dao.MenuitemRepository;
+import com.ss.scrumptious_orders.dao.OrderRepository;
+import com.ss.scrumptious_orders.dao.PaymentRepository;
+import com.ss.scrumptious_orders.dao.RestaurantOwnerRepository;
+import com.ss.scrumptious_orders.dao.RestaurantRepository;
 import com.ss.scrumptious_orders.dto.CreateMenuitemOrderDto;
 import com.ss.scrumptious_orders.dto.CreateOrderDto;
 import com.ss.scrumptious_orders.dto.UpdateOrderDto;
-import com.ss.scrumptious_orders.entity.*;
+import com.ss.scrumptious_orders.entity.Customer;
+import com.ss.scrumptious_orders.entity.Menuitem;
+import com.ss.scrumptious_orders.entity.MenuitemOrder;
+import com.ss.scrumptious_orders.entity.MenuitemOrderKey;
+import com.ss.scrumptious_orders.entity.Order;
+import com.ss.scrumptious_orders.entity.Payment;
+import com.ss.scrumptious_orders.entity.Restaurant;
+import com.ss.scrumptious_orders.entity.RestaurantOwner;
 import com.ss.scrumptious_orders.exception.NoSuchCustomerException;
 import com.ss.scrumptious_orders.exception.NoSuchMenuitemException;
 import com.ss.scrumptious_orders.exception.NoSuchMenuitemOrderException;
 import com.ss.scrumptious_orders.exception.NoSuchOrderException;
 import com.ss.scrumptious_orders.exception.NoSuchRestaurantException;
-
 import com.ss.scrumptious_orders.payment.StripeService;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Charge;
-import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,8 +51,12 @@ public class OrderServiceImpl implements OrderService {
     private final RestaurantRepository restaurantRepository;
     private final MenuitemRepository menuitemRepository;
     private final MenuitemOrderRepository menuitemOrderRepository;
+
+    private final RestaurantOwnerRepository restaurantOwnerRepository;
+
     private final StripeService stripeService;
     private final PaymentRepository paymentRepository;
+
 
     @Override
     public List<Order> getAllOrders() {
@@ -78,7 +95,7 @@ public class OrderServiceImpl implements OrderService {
             order.setRequestedDeliveryTime(createOrderDto.getRequestedDeliveryTime());
         }
         if (createOrderDto.getSubmittedAt() != null) {
-            order.setSubmitedAt(createOrderDto.getSubmittedAt());
+            order.setSubmittedAt(createOrderDto.getSubmittedAt());
         }
 
         // need to save here before adding the menuitems because menuitems need a valid orderId
@@ -135,7 +152,7 @@ public class OrderServiceImpl implements OrderService {
             order.setRequestedDeliveryTime(updateOrderDto.getRequestedDeliveryTime());
         }
         if (updateOrderDto.getSubmittedAt() != null) {
-            order.setSubmitedAt(updateOrderDto.getSubmittedAt());
+            order.setSubmittedAt(updateOrderDto.getSubmittedAt());
         }
 
         if(updateOrderDto.getMenuitems() != null) {
@@ -205,6 +222,33 @@ public class OrderServiceImpl implements OrderService {
         menuitemOrderRepository.deleteByOrder(order);
     }
 
+
+	@Override
+	public List<Order> getAllOrdersByOwner(UUID ownerId) {
+		// Get Owner
+		RestaurantOwner owner = restaurantOwnerRepository.findById(ownerId).orElseThrow(null);
+		log.info("Owner" + owner.getFirstName());
+		// Get All Restaurants owned by Owner
+		List<Restaurant> restaurants = restaurantRepository.findByOwner(owner);
+		log.info("Restaurants Size" +restaurants.size());
+		List<Order> orders = new ArrayList<Order>();
+		// Loop through all restaurants and Append all orders from each restaurant
+		restaurants.stream().forEach(restaurant -> {
+			log.info("Restaurant Name = " + restaurant.getName());
+			orders.addAll(orderRepository.findByRestaurant(restaurant));
+		});
+		
+		
+		return orders;
+	}
+
+	@Override
+	public List<Order> getAllOrdersByRestaurant(Long restaurantId) {
+		Restaurant restaurant = restaurantRepository.findById(restaurantId).orElseThrow(null);
+		List<Order> orders = orderRepository.findByRestaurant(restaurant);
+		return orders;
+	}
+
     @Transactional
     @Override
     public String placeOrder(Long orderId, String paymentToken) {
@@ -219,7 +263,7 @@ public class OrderServiceImpl implements OrderService {
                 Payment pay = Payment.builder().customer(order.getCustomer()).name(charge.getPaymentMethod()).stripeId(charge.getId()).paymentStatus("paid").build();
                 paymentRepository.save(pay);
                 order.setConfirmationCode(UUID.randomUUID().toString());
-                order.setSubmitedAt(ZonedDateTime.now());
+                order.setSubmittedAt(ZonedDateTime.now());
                 order.setPreparationStatus("ORDER PLACED ");
                 orderRepository.save(order);
             }
