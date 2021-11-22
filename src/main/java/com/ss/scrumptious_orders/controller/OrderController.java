@@ -1,27 +1,12 @@
 package com.ss.scrumptious_orders.controller;
 
 import java.net.URI;
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.util.JSONPObject;
-import com.google.gson.Gson;
-import com.ss.scrumptious_orders.dto.CreateMenuitemOrderDto;
-import com.ss.scrumptious_orders.dto.CreateOrderDto;
-import com.ss.scrumptious_orders.dto.UpdateOrderDto;
-import com.ss.scrumptious_orders.entity.MenuitemOrder;
-import com.ss.scrumptious_orders.entity.Order;
-import com.ss.scrumptious_orders.payment.StripeService;
-import com.ss.scrumptious_orders.service.OrderService;
-
-import com.stripe.Stripe;
-import com.stripe.exception.StripeException;
-import com.stripe.model.Charge;
-import com.stripe.model.checkout.Session;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.http.MediaType;
@@ -37,9 +22,17 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import com.google.gson.Gson;
+import com.ss.scrumptious_orders.dto.CreateMenuitemOrderDto;
+import com.ss.scrumptious_orders.dto.CreateOrderDto;
+import com.ss.scrumptious_orders.dto.UpdateOrderDto;
+import com.ss.scrumptious_orders.entity.MenuitemOrder;
+import com.ss.scrumptious_orders.entity.Order;
+import com.ss.scrumptious_orders.payment.StripeService;
+import com.ss.scrumptious_orders.service.OrderService;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import springfox.documentation.spring.web.json.Json;
 
 @Slf4j
 @RestController
