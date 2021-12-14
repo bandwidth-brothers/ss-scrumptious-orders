@@ -7,10 +7,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import javax.money.Monetary;
 import javax.transaction.Transactional;
 
+import org.javamoney.moneta.Money;
 import org.springframework.stereotype.Service;
 
+import com.ss.scrumptious.common_entities.entity.Customer;
+import com.ss.scrumptious.common_entities.entity.Menuitem;
+import com.ss.scrumptious.common_entities.entity.MenuitemOrder;
+import com.ss.scrumptious.common_entities.entity.MenuitemOrderKey;
+import com.ss.scrumptious.common_entities.entity.Order;
+import com.ss.scrumptious.common_entities.entity.Payment;
+import com.ss.scrumptious.common_entities.entity.Restaurant;
+import com.ss.scrumptious.common_entities.entity.RestaurantOwner;
 import com.ss.scrumptious_orders.dao.CustomerRepository;
 import com.ss.scrumptious_orders.dao.MenuitemOrderRepository;
 import com.ss.scrumptious_orders.dao.MenuitemRepository;
@@ -21,14 +31,6 @@ import com.ss.scrumptious_orders.dao.RestaurantRepository;
 import com.ss.scrumptious_orders.dto.CreateMenuitemOrderDto;
 import com.ss.scrumptious_orders.dto.CreateOrderDto;
 import com.ss.scrumptious_orders.dto.UpdateOrderDto;
-import com.ss.scrumptious_orders.entity.Customer;
-import com.ss.scrumptious_orders.entity.Menuitem;
-import com.ss.scrumptious_orders.entity.MenuitemOrder;
-import com.ss.scrumptious_orders.entity.MenuitemOrderKey;
-import com.ss.scrumptious_orders.entity.Order;
-import com.ss.scrumptious_orders.entity.Payment;
-import com.ss.scrumptious_orders.entity.Restaurant;
-import com.ss.scrumptious_orders.entity.RestaurantOwner;
 import com.ss.scrumptious_orders.exception.NoSuchCustomerException;
 import com.ss.scrumptious_orders.exception.NoSuchMenuitemException;
 import com.ss.scrumptious_orders.exception.NoSuchMenuitemOrderException;
@@ -86,7 +88,7 @@ public class OrderServiceImpl implements OrderService {
             order.setConfirmationCode(createOrderDto.getConfirmationCode());
         }
         if (createOrderDto.getOrderDiscount() != null) {
-            order.setOrderDiscount(createOrderDto.getOrderDiscount());
+            order.setDiscount(createOrderDto.getOrderDiscount());
         }
         if (createOrderDto.getPreparationStatus() != null) {
             order.setPreparationStatus(createOrderDto.getPreparationStatus());
@@ -143,7 +145,7 @@ public class OrderServiceImpl implements OrderService {
             order.setConfirmationCode(updateOrderDto.getConfirmationCode());
         }
         if (updateOrderDto.getOrderDiscount() != null) {
-            order.setOrderDiscount(updateOrderDto.getOrderDiscount());
+            order.setDiscount(updateOrderDto.getOrderDiscount());
         }
         if (updateOrderDto.getPreparationStatus() != null) {
             order.setPreparationStatus(updateOrderDto.getPreparationStatus());
@@ -255,7 +257,7 @@ public class OrderServiceImpl implements OrderService {
         String confirmationCode = "";
         try{
             Order order = orderRepository.findById(orderId).orElseThrow(() -> new NoSuchOrderException(orderId));
-            Integer cost = (int) (getTotalCost(order) * (1 - order.getOrderDiscount()) * 100) ;
+            Integer cost = (int) (getTotalCost(order) * (1 - order.getDiscount()) * 100) ;
             Charge charge = stripeService.charge(orderId, cost, paymentToken);
             log.info("charge: " + charge.getPaymentMethod() + " id: " + charge.getId());
             if (charge.getId() != null){
@@ -278,8 +280,8 @@ public class OrderServiceImpl implements OrderService {
 
     public double getTotalCost(Order order){
 
-        double sum = order.getMenuitemOrders().stream().mapToDouble(o ->
-                o.getMenuitem().getPrice() * (1 - o.getMenuitem().getDiscount()) * o.getQuantity()
+        double sum = order.getMenuitemOrder().stream().mapToDouble(o ->
+                o.getMenuitem().getPrice().floatValue() * (1 - o.getMenuitem().getDiscount()) * o.getQuantity()
         ).sum();
         return  sum;
     }

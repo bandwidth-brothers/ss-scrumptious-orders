@@ -8,7 +8,6 @@ import java.util.UUID;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.PropertySource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -23,11 +22,11 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.google.gson.Gson;
+import com.ss.scrumptious.common_entities.entity.MenuitemOrder;
+import com.ss.scrumptious.common_entities.entity.Order;
 import com.ss.scrumptious_orders.dto.CreateMenuitemOrderDto;
 import com.ss.scrumptious_orders.dto.CreateOrderDto;
 import com.ss.scrumptious_orders.dto.UpdateOrderDto;
-import com.ss.scrumptious_orders.entity.MenuitemOrder;
-import com.ss.scrumptious_orders.entity.Order;
 import com.ss.scrumptious_orders.payment.StripeService;
 import com.ss.scrumptious_orders.service.OrderService;
 
@@ -38,10 +37,10 @@ import lombok.extern.slf4j.Slf4j;
 @RestController
 @RequestMapping("/orders")
 @RequiredArgsConstructor
-@PropertySource("classpath:stripe-config.properties")
+//@PropertySource("classpath:application.properties")
 public class OrderController {
 
-    @Value("${STRIPE_SECRET_KEY}")
+    @Value("${stripe.secret.key}")
     String secretKey;
 
     private final OrderService orderService;

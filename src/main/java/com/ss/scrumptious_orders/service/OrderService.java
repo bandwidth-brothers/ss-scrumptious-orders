@@ -3,11 +3,11 @@ package com.ss.scrumptious_orders.service;
 import java.util.List;
 import java.util.UUID;
 
+import com.ss.scrumptious.common_entities.entity.MenuitemOrder;
+import com.ss.scrumptious.common_entities.entity.Order;
 import com.ss.scrumptious_orders.dto.CreateMenuitemOrderDto;
 import com.ss.scrumptious_orders.dto.CreateOrderDto;
 import com.ss.scrumptious_orders.dto.UpdateOrderDto;
-import com.ss.scrumptious_orders.entity.MenuitemOrder;
-import com.ss.scrumptious_orders.entity.Order;
 
 public interface OrderService {
 

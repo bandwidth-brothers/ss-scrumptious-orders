@@ -3,7 +3,7 @@ package com.ss.scrumptious_orders.exception;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
-import com.ss.scrumptious_orders.entity.MenuitemOrderKey;
+import com.ss.scrumptious.common_entities.entity.MenuitemOrderKey;
 
 /**
  * To be thrown when a {@link com.ss.scrumptious_orders.entity.MenuitemOrder}

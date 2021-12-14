@@ -5,9 +5,9 @@ import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import com.ss.scrumptious_orders.entity.Customer;
-import com.ss.scrumptious_orders.entity.Order;
-import com.ss.scrumptious_orders.entity.Restaurant;
+import com.ss.scrumptious.common_entities.entity.Customer;
+import com.ss.scrumptious.common_entities.entity.Order;
+import com.ss.scrumptious.common_entities.entity.Restaurant;
 
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Long> {

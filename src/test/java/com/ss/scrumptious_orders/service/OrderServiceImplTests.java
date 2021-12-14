@@ -17,6 +17,12 @@ import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 
+import com.ss.scrumptious.common_entities.entity.Customer;
+import com.ss.scrumptious.common_entities.entity.Menuitem;
+import com.ss.scrumptious.common_entities.entity.MenuitemOrder;
+import com.ss.scrumptious.common_entities.entity.MenuitemOrderKey;
+import com.ss.scrumptious.common_entities.entity.Order;
+import com.ss.scrumptious.common_entities.entity.Restaurant;
 import com.ss.scrumptious_orders.dao.CustomerRepository;
 import com.ss.scrumptious_orders.dao.MenuitemOrderRepository;
 import com.ss.scrumptious_orders.dao.MenuitemRepository;
@@ -27,12 +33,6 @@ import com.ss.scrumptious_orders.dao.RestaurantRepository;
 import com.ss.scrumptious_orders.dto.CreateMenuitemOrderDto;
 import com.ss.scrumptious_orders.dto.CreateOrderDto;
 import com.ss.scrumptious_orders.dto.UpdateOrderDto;
-import com.ss.scrumptious_orders.entity.Customer;
-import com.ss.scrumptious_orders.entity.Menuitem;
-import com.ss.scrumptious_orders.entity.MenuitemOrder;
-import com.ss.scrumptious_orders.entity.MenuitemOrderKey;
-import com.ss.scrumptious_orders.entity.Order;
-import com.ss.scrumptious_orders.entity.Restaurant;
 import com.ss.scrumptious_orders.payment.StripeService;
 
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
@@ -81,7 +81,7 @@ public class OrderServiceImplTests {
             .restaurant(mockRestaurant)
             .preparationStatus("testing")
             .confirmationCode("349398dfsjmgldk")
-            .orderDiscount(0.10f)
+            .discount(0.10f)
             .submittedAt(ZonedDateTime.now())
             .requestedDeliveryTime(ZonedDateTime.now().plusHours(1))
             .build();

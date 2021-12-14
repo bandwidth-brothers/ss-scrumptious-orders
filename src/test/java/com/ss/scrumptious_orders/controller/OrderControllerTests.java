@@ -35,14 +35,13 @@ import org.springframework.web.context.WebApplicationContext;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ss.scrumptious.common_entities.entity.Customer;
+import com.ss.scrumptious.common_entities.entity.Menuitem;
+import com.ss.scrumptious.common_entities.entity.MenuitemOrder;
+import com.ss.scrumptious.common_entities.entity.Order;
 import com.ss.scrumptious_orders.dao.OrderRepository;
 import com.ss.scrumptious_orders.dto.CreateMenuitemOrderDto;
 import com.ss.scrumptious_orders.dto.CreateOrderDto;
-import com.ss.scrumptious_orders.dto.UpdateOrderDto;
-import com.ss.scrumptious_orders.entity.Customer;
-import com.ss.scrumptious_orders.entity.Menuitem;
-import com.ss.scrumptious_orders.entity.MenuitemOrder;
-import com.ss.scrumptious_orders.entity.Order;
 import com.ss.scrumptious_orders.security.SecurityConstants;
 import com.ss.scrumptious_orders.service.OrderService;
 
