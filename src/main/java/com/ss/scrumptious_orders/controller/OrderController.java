@@ -47,8 +47,6 @@ import springfox.documentation.spring.web.json.Json;
 @RequiredArgsConstructor
 public class OrderController {
 
-    @Value("${STRIPE_SECRET_KEY}")
-    String secretKey;
 
     private final OrderService orderService;
     private final StripeService stripeService;

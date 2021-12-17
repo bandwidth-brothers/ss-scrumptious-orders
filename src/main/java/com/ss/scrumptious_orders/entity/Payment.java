@@ -30,7 +30,7 @@ public class Payment {
     private String stripeId;
 
     @Builder.Default
-    @Column(columnDefinition = "TINYINT")
+    @Column(name = "refunded", columnDefinition = "TINYINT")
     private Boolean refund = false;
 
     private String paymentStatus;

@@ -50,10 +50,10 @@ public class Order {
     private ZonedDateTime requestedDeliveryTime;
 
     @Builder.Default
-    @Column(name = "order_discount")
+    @Column(name = "discount")
     private Float orderDiscount = 0.00f;
 
-    @Column(name = "submited_at")
+    @Column(name = "submitted_at")
     private ZonedDateTime submitedAt ;
 
     @Builder.Default

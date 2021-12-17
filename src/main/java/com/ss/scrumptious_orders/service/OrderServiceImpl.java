@@ -241,7 +241,7 @@ public class OrderServiceImpl implements OrderService {
     public double getTotalCost(Order order){
 
         double sum = order.getMenuitemOrders().stream().mapToDouble(o ->
-                o.getMenuitem().getPrice() * (1 - o.getMenuitem().getDiscount()) * o.getQuantity()
+                o.getMenuitem().getPrice().doubleValue() * (1 - o.getMenuitem().getDiscount()) * o.getQuantity()
         ).sum();
         return  sum;
     }

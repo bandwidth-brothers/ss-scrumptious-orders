@@ -2,6 +2,7 @@ package com.ss.scrumptious_orders.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
@@ -35,10 +36,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             "/webjars/**",
             // -- Swagger UI v3 (OpenAPI)
             "/v3/api-docs/**",
-            "/swagger-ui/**"
+            "/swagger-ui/**",
             // other public endpoints of your API may be appended to this array
+            "/h2-console/*",
+            "/orders/health"
     };
-    
+
     @Override
     public void configure(WebSecurity web) throws Exception {
         //web.ignoring().antMatchers("/swagger-ui/**", "/v3/api-docs/**");
@@ -51,7 +54,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             .cors().and().csrf().disable()
             .authorizeRequests()
             .antMatchers("/h2-console/*").permitAll()
-            .antMatchers("/register/**").permitAll()
             .antMatchers(AUTH_WHITELIST).permitAll()
             .anyRequest().authenticated()
             .and()
@@ -59,15 +61,18 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
     }
 
-    // @Bean
-    // CorsConfigurationSource corsConfigurationSource() {
+    @Bean
+    CorsConfigurationSource corsConfigurationSource() {
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        CorsConfiguration config = new CorsConfiguration().applyPermitDefaultValues();
+        config.addAllowedOrigin("*");
+        config.addAllowedMethod(HttpMethod.PUT);
+        config.addAllowedMethod(HttpMethod.DELETE);
+        source.registerCorsConfiguration("/**", config);
+        return source;
+    }
 
-    //     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-    //     source.registerCorsConfiguration("/**", new CorsConfiguration().applyPermitDefaultValues());
-    //     return source;
-    // }
-
-	@Bean PasswordEncoder passwordEncoder(){ 
+	@Bean PasswordEncoder passwordEncoder(){
 		return new BCryptPasswordEncoder();
 	}
 
