@@ -160,7 +160,7 @@ public class OrderServiceImpl implements OrderService {
         if(updateOrderDto.getMenuitems() != null) {
             for (CreateMenuitemOrderDto createMenuitemOrderDto : updateOrderDto.getMenuitems()) {
 
-                editItemQuantity(orderId, createMenuitemOrderDto.getMenuitemId(), 
+                editItemQuantity(orderId, createMenuitemOrderDto.getMenuitemId(),
                         createMenuitemOrderDto.getQuantity());
             }
         }
@@ -239,8 +239,8 @@ public class OrderServiceImpl implements OrderService {
 			log.info("Restaurant Name = " + restaurant.getName());
 			orders.addAll(orderRepository.findByRestaurant(restaurant));
 		});
-		
-		
+
+
 		return orders;
 	}
 
@@ -280,7 +280,7 @@ public class OrderServiceImpl implements OrderService {
 
     public double getTotalCost(Order order){
 
-        double sum = order.getMenuitemOrder().stream().mapToDouble(o ->
+        double sum = order.getMenuitemOrders().stream().mapToDouble(o ->
                 o.getMenuitem().getPrice().floatValue() * (1 - o.getMenuitem().getDiscount()) * o.getQuantity()
         ).sum();
         return  sum;
