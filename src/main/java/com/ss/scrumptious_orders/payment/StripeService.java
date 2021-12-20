@@ -13,10 +13,9 @@ import com.stripe.exception.StripeException;
 import com.stripe.model.Charge;
 
 @Service
-//@PropertySource("classpath:application.properties")
 public class StripeService {
 
-    @Value("${stripe.secret.key}")
+    @Value("${STRIPE_SECRET_KEY}")
     String secretKey;
 
     @PostConstruct

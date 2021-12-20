@@ -37,14 +37,11 @@ import lombok.extern.slf4j.Slf4j;
 @RestController
 @RequestMapping("/orders")
 @RequiredArgsConstructor
-//@PropertySource("classpath:application.properties")
 public class OrderController {
 
-    @Value("${stripe.secret.key}")
-    String secretKey;
+
 
     private final OrderService orderService;
-    private final StripeService stripeService;
 
 
 
@@ -69,7 +66,7 @@ public class OrderController {
         }
         return ResponseEntity.ok(orders);
     }
-    
+
     @PreAuthorize("hasRole('ADMIN')"
             + " OR @ownerAuthenticationManager.ownerIdMatches(authentication, #restaurantId, #ownerId)")
     @GetMapping(value = "owners/{ownerId}/restaurants/{restaurantId}", produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE })
@@ -80,7 +77,7 @@ public class OrderController {
         }
         return ResponseEntity.ok(orders);
     }
-    
+
     @PreAuthorize("hasRole('ADMIN')"
         + " OR @customerAuthenticationManager.customerIdMatches(authentication, #orderId)"
         + " OR @ownerAuthenticationManager.ownerIdMatches(authentication, #orderId)")
