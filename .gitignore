@@ -50,6 +50,6 @@ buildNumber.properties
 
 .idea/
 
-application-*.properties
+application-local.properties
 stripe-config.properties
 
