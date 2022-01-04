@@ -37,13 +37,13 @@ pipeline{
 
     	   }
 
-            stage('Analysis'){
-                steps {
-                    withSonarQubeEnv('jenkins-sonar') {
-                        sh 'mvn clean verify sonar:sonar'
-                    }
+        stage('Analysis'){
+            steps {
+                withSonarQubeEnv('jenkins-sonar') {
+                    sh 'mvn clean verify sonar:sonar'
                 }
             }
+        }
 
 	}
 }
