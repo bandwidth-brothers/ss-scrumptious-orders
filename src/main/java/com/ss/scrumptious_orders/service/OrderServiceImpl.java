@@ -10,17 +10,14 @@ import java.util.UUID;
 import javax.money.Monetary;
 import javax.transaction.Transactional;
 
+import com.ss.scrumptious.common_entities.entity.*;
+import com.ss.scrumptious_orders.exception.*;
+import com.stripe.model.Refund;
 import org.javamoney.moneta.Money;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import com.ss.scrumptious.common_entities.entity.Customer;
-import com.ss.scrumptious.common_entities.entity.Menuitem;
-import com.ss.scrumptious.common_entities.entity.MenuitemOrder;
-import com.ss.scrumptious.common_entities.entity.MenuitemOrderKey;
-import com.ss.scrumptious.common_entities.entity.Order;
-import com.ss.scrumptious.common_entities.entity.Payment;
-import com.ss.scrumptious.common_entities.entity.Restaurant;
-import com.ss.scrumptious.common_entities.entity.RestaurantOwner;
 import com.ss.scrumptious_orders.dao.CustomerRepository;
 import com.ss.scrumptious_orders.dao.MenuitemOrderRepository;
 import com.ss.scrumptious_orders.dao.MenuitemRepository;
@@ -31,11 +28,6 @@ import com.ss.scrumptious_orders.dao.RestaurantRepository;
 import com.ss.scrumptious_orders.dto.CreateMenuitemOrderDto;
 import com.ss.scrumptious_orders.dto.CreateOrderDto;
 import com.ss.scrumptious_orders.dto.UpdateOrderDto;
-import com.ss.scrumptious_orders.exception.NoSuchCustomerException;
-import com.ss.scrumptious_orders.exception.NoSuchMenuitemException;
-import com.ss.scrumptious_orders.exception.NoSuchMenuitemOrderException;
-import com.ss.scrumptious_orders.exception.NoSuchOrderException;
-import com.ss.scrumptious_orders.exception.NoSuchRestaurantException;
 import com.ss.scrumptious_orders.payment.StripeService;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Charge;
@@ -262,7 +254,7 @@ public class OrderServiceImpl implements OrderService {
             log.info("charge: " + charge.getPaymentMethod() + " id: " + charge.getId());
             if (charge.getId() != null){
 
-                Payment pay = Payment.builder().customer(order.getCustomer()).name(charge.getPaymentMethod()).stripeId(charge.getId()).paymentStatus("paid").build();
+                Payment pay = Payment.builder().order(order).customer(order.getCustomer()).name(charge.getPaymentMethod()).stripeId(charge.getId()).paymentStatus("paid").build();
                 paymentRepository.save(pay);
                 order.setConfirmationCode(UUID.randomUUID().toString());
                 order.setSubmittedAt(ZonedDateTime.now());
@@ -275,6 +267,27 @@ public class OrderServiceImpl implements OrderService {
         }catch (StripeException stripeException){
             log.error("orderId: " + orderId + " --stripeException: " + stripeException);
             return confirmationCode;
+        }
+    }
+
+    @Transactional
+    @Override
+    public void refundOrder(Long orderId) {
+        Order order = orderRepository.findById(orderId).orElseThrow(() -> new NoSuchOrderException(orderId));
+        Payment payment = paymentRepository.findByOrder(order);
+        if(payment.getRefunded()){
+            throw new PaymentAlreadyRefundException(orderId);
+        }
+        try {
+            Refund refund = stripeService.refund(payment.getStripeId());
+            log.info(refund.toString());
+            payment.setRefunded(refund.getAmount() > 0);
+            paymentRepository.save(payment);
+            order.setPreparationStatus(String.valueOf(PreparationStatus.CANCELLED));
+            orderRepository.save(order);
+        }catch (StripeException stripeException){
+            log.error("orderId: " + orderId + " --refundException: " + stripeException);
+            throw new RefundException(orderId);
         }
     }
 

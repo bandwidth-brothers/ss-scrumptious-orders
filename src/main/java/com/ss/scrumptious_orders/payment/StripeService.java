@@ -5,6 +5,7 @@ import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
+import com.stripe.model.Refund;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -31,5 +32,11 @@ public class StripeService {
         chargeParams.put("description", "orderId: " + orderId);
         chargeParams.put("source", token);
         return Charge.create(chargeParams);
+    }
+
+    public Refund refund(String stripeId) throws StripeException {
+        Map<String, Object> params = new HashMap<>();
+        params.put("charge", stripeId);
+        return Refund.create(params);
     }
 }

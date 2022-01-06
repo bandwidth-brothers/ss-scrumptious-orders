@@ -120,7 +120,7 @@ public class OrderControllerTests {
         List<Order> orders = new ArrayList<>();
         orders.add(mockOrder);
         when(orderService.getAllOrders()).thenReturn(orders);
-        
+
         MockUser[] authed = {MockUser.ADMIN};
 
         for (MockUser user : authed) {
@@ -128,9 +128,9 @@ public class OrderControllerTests {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.[0]preparationStatus").value(mockOrder.getPreparationStatus()));
         }
-        
-        MockUser[] unauthed = {MockUser.DEFAULT, 
-            MockUser.DRIVER, 
+
+        MockUser[] unauthed = {MockUser.DEFAULT,
+            MockUser.DRIVER,
             MockUser.MATCH_CUSTOMER,
             MockUser.OWNER,
             MockUser.UNMATCH_CUSTOMER};
@@ -139,13 +139,13 @@ public class OrderControllerTests {
             mvc.perform(get("/orders").header(securityConstants.getHEADER_STRING(), getJwt(user)))
                 .andExpect(status().isForbidden());
         }
-        
+
     }
 
     @Test
     public void getAllOrdersEmptyTest() throws Exception {
         when(orderService.getAllOrders()).thenReturn(Collections.emptyList());
-        
+
         mvc.perform(get("/orders").header(securityConstants.getHEADER_STRING(), getJwt(MockUser.ADMIN)))
         .andExpect(status().isNoContent());
     }
@@ -157,23 +157,23 @@ public class OrderControllerTests {
 	 * when(orderRepository.findById(mockOrder.getId())).thenReturn(Optional.
 	 * ofNullable(mockOrder));
 	 * when(orderService.getOrderById(mockOrder.getId())).thenReturn(mockOrder);
-	 * 
+	 *
 	 * MockUser[] authed = {MockUser.ADMIN, MockUser.MATCH_CUSTOMER};
-	 * 
+	 *
 	 * for (MockUser user : authed) { mvc.perform(get("/orders/" +
 	 * mockOrder.getId()).header(securityConstants.getHEADER_STRING(),
 	 * getJwt(user))) .andExpect(status().isOk())
 	 * .andExpect(jsonPath("$.preparationStatus").value(mockOrder.
 	 * getPreparationStatus())); }
-	 * 
+	 *
 	 * MockUser[] unauthed = {MockUser.DEFAULT, MockUser.DRIVER, MockUser.OWNER,
 	 * MockUser.UNMATCH_CUSTOMER};
-	 * 
+	 *
 	 * for (MockUser user : unauthed) { mvc.perform(get("/orders/" +
 	 * mockOrder.getId()).header(securityConstants.getHEADER_STRING(),
 	 * getJwt(user))) .andExpect(status().isForbidden()); } }
 	 */
-    
+
     @Test
     void getOrderByBadIdTest() throws Exception {
         mvc.perform(get("/orders/99999").header(securityConstants.getHEADER_STRING(), getJwt(MockUser.ADMIN)))
@@ -185,7 +185,7 @@ public class OrderControllerTests {
         List<Order> orders = new ArrayList<>();
         orders.add(mockOrder);
         when(orderService.getOrdersByCustomerId(mockCustomer.getId())).thenReturn(orders);
-        
+
         MockUser[] authed = {MockUser.ADMIN, MockUser.MATCH_CUSTOMER};
 
         for (MockUser user : authed) {
@@ -193,9 +193,9 @@ public class OrderControllerTests {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.[0]preparationStatus").value(mockOrder.getPreparationStatus()));
         }
-        
-        MockUser[] unauthed = {MockUser.DEFAULT, 
-            MockUser.DRIVER, 
+
+        MockUser[] unauthed = {MockUser.DEFAULT,
+            MockUser.DRIVER,
             MockUser.OWNER,
             MockUser.UNMATCH_CUSTOMER};
 
@@ -208,9 +208,9 @@ public class OrderControllerTests {
     @Test
     void getOrderByCustomerIdEmptyTest() throws Exception {
         when(orderService.getOrdersByCustomerId(mockCustomer.getId())).thenReturn(Collections.emptyList());
-        
+
         mvc.perform(get("/orders/customers/" + mockCustomer.getId()).header(securityConstants.getHEADER_STRING(), getJwt(MockUser.ADMIN)))
-            .andExpect(status().isNoContent());        
+            .andExpect(status().isNoContent());
     }
 
     @Test
@@ -231,11 +231,11 @@ public class OrderControllerTests {
                     .andExpect(jsonPath("$").doesNotExist())
                     .andReturn();
             assertTrue(mvcResult.getResponse().containsHeader("Location"));
-            
+
         }
-        
-        MockUser[] unauthed = {MockUser.DEFAULT, 
-            MockUser.DRIVER, 
+
+        MockUser[] unauthed = {MockUser.DEFAULT,
+            MockUser.DRIVER,
             MockUser.OWNER,
             MockUser.UNMATCH_CUSTOMER};
 
@@ -251,21 +251,21 @@ public class OrderControllerTests {
 	 * @Test void updateOrderAuthorizationTest() throws Exception {
 	 * when(orderRepository.findById(mockOrder.getId())).thenReturn(Optional.
 	 * ofNullable(mockOrder));
-	 * 
+	 *
 	 * UpdateOrderDto mockDto = UpdateOrderDto.builder() .build();
-	 * 
+	 *
 	 * MockUser[] authed = {MockUser.ADMIN, MockUser.MATCH_CUSTOMER};
-	 * 
+	 *
 	 * for (MockUser user : authed) { mvc.perform(put("/orders/" +
 	 * mockOrder.getId()) .contentType(MediaType.APPLICATION_JSON) .content(new
 	 * ObjectMapper().writeValueAsString(mockDto)).header(securityConstants.
 	 * getHEADER_STRING(), getJwt(user))) .andExpect(status().isNoContent());
-	 * 
+	 *
 	 * }
-	 * 
+	 *
 	 * MockUser[] unauthed = {MockUser.DEFAULT, MockUser.DRIVER, MockUser.OWNER,
 	 * MockUser.UNMATCH_CUSTOMER};
-	 * 
+	 *
 	 * for (MockUser user : unauthed) { mvc.perform(put("/orders/" +
 	 * mockOrder.getId()) .contentType(MediaType.APPLICATION_JSON) .content(new
 	 * ObjectMapper().writeValueAsString(mockDto)).header(securityConstants.
@@ -283,9 +283,9 @@ public class OrderControllerTests {
                 .header(securityConstants.getHEADER_STRING(), getJwt(user)))
                     .andExpect(status().isNoContent());
         }
-        
-        MockUser[] unauthed = {MockUser.DEFAULT, 
-            MockUser.DRIVER, 
+
+        MockUser[] unauthed = {MockUser.DEFAULT,
+            MockUser.DRIVER,
             MockUser.OWNER,
             MockUser.UNMATCH_CUSTOMER};
 
@@ -315,9 +315,9 @@ public class OrderControllerTests {
                 .andReturn();
         assertTrue(mvcResult.getResponse().containsHeader("Location"));
         }
-        
-        MockUser[] unauthed = {MockUser.DEFAULT, 
-            MockUser.DRIVER, 
+
+        MockUser[] unauthed = {MockUser.DEFAULT,
+            MockUser.DRIVER,
             MockUser.OWNER,
             MockUser.UNMATCH_CUSTOMER};
 
@@ -342,9 +342,9 @@ public class OrderControllerTests {
             .content(new ObjectMapper().writeValueAsString(mockQuantity)).header(securityConstants.getHEADER_STRING(), getJwt(user)))
                 .andExpect(status().isNoContent());
         }
-        
-        MockUser[] unauthed = {MockUser.DEFAULT, 
-            MockUser.DRIVER, 
+
+        MockUser[] unauthed = {MockUser.DEFAULT,
+            MockUser.DRIVER,
             MockUser.OWNER,
             MockUser.UNMATCH_CUSTOMER};
 
@@ -367,9 +367,9 @@ public class OrderControllerTests {
             .header(securityConstants.getHEADER_STRING(), getJwt(user)))
                 .andExpect(status().isNoContent());
         }
-        
-        MockUser[] unauthed = {MockUser.DEFAULT, 
-            MockUser.DRIVER, 
+
+        MockUser[] unauthed = {MockUser.DEFAULT,
+            MockUser.DRIVER,
             MockUser.OWNER,
             MockUser.UNMATCH_CUSTOMER};
 
@@ -391,9 +391,9 @@ public class OrderControllerTests {
             .header(securityConstants.getHEADER_STRING(), getJwt(user)))
                 .andExpect(status().isNoContent());
         }
-        
-        MockUser[] unauthed = {MockUser.DEFAULT, 
-            MockUser.DRIVER, 
+
+        MockUser[] unauthed = {MockUser.DEFAULT,
+            MockUser.DRIVER,
             MockUser.OWNER,
             MockUser.UNMATCH_CUSTOMER};
 
@@ -411,21 +411,44 @@ public class OrderControllerTests {
         OWNER("employee@test.com", "ROLE_OWNER", UUID.randomUUID()),
         DRIVER("travel_agent@test.com", "ROLE_DRIVER", UUID.randomUUID()),
         ADMIN("admin@test.com", "ROLE_ADMIN", UUID.randomUUID());
-    
-    
+
+
         final String email;
         final GrantedAuthority grantedAuthority;
         final UUID id;
-    
+
         MockUser(String email, String grantedAuthority, UUID id) {
           this.email = email;
           this.grantedAuthority = new SimpleGrantedAuthority(grantedAuthority);
           this.id = id;
         }
-    
+
         public String getAuthority() {
           return grantedAuthority.getAuthority();
         }
+      }
+
+      @Test
+      void refundOrderTest() throws Exception{
+
+          when(orderRepository.findById(mockOrder.getId())).thenReturn(Optional.ofNullable(mockOrder));
+          MockUser[] authed = {MockUser.ADMIN, MockUser.MATCH_CUSTOMER};
+          for (MockUser user : authed) {
+              mvc.perform(put("/orders/" + mockOrder.getId() + "/refund")
+                      .header(securityConstants.getHEADER_STRING(), getJwt(user)))
+                      .andExpect(status().isNoContent());
+          }
+
+          MockUser[] unauthed = {MockUser.DEFAULT,
+                  MockUser.DRIVER,
+                  MockUser.OWNER,
+                  MockUser.UNMATCH_CUSTOMER};
+
+          for (MockUser user : unauthed) {
+              mvc.perform(put("/orders/" + mockOrder.getId() + "/refund")
+                      .header(securityConstants.getHEADER_STRING(), getJwt(user)))
+                      .andExpect(status().isForbidden());
+          }
       }
 
 }
