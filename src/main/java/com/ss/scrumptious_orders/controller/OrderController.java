@@ -39,10 +39,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class OrderController {
 
-
-
     private final OrderService orderService;
-
 
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -187,5 +184,14 @@ public class OrderController {
         log.info("orderId: "  + orderId + " confirmationCode: " + confirmationCode);
         Gson gson = new Gson();
         return ResponseEntity.ok(gson.toJson(confirmationCode));
+    }
+
+    @PreAuthorize("hasRole('ADMIN')"
+            + " OR @customerAuthenticationManager.customerIdMatches(authentication, #orderId)")
+    @PutMapping(value = "/{orderId}/refund")
+    public ResponseEntity<Void> refundOrder(@PathVariable Long orderId){
+        log.info("PUT Order id = " + orderId);
+        orderService.refundOrder(orderId);
+        return ResponseEntity.noContent().build();
     }
 }

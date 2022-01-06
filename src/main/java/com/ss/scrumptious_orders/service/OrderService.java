@@ -38,4 +38,6 @@ public interface OrderService {
 
 
     String placeOrder(Long orderId, String paymentToken);
+
+    void refundOrder(Long orderId);
 }

@@ -1,7 +1,9 @@
 package com.ss.scrumptious_orders.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 
 import java.time.ZonedDateTime;
@@ -10,6 +12,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import com.ss.scrumptious.common_entities.entity.*;
+import com.ss.scrumptious_orders.exception.PaymentAlreadyRefundException;
+import com.ss.scrumptious_orders.exception.RefundException;
+import com.stripe.exception.StripeException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -17,12 +23,6 @@ import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 
-import com.ss.scrumptious.common_entities.entity.Customer;
-import com.ss.scrumptious.common_entities.entity.Menuitem;
-import com.ss.scrumptious.common_entities.entity.MenuitemOrder;
-import com.ss.scrumptious.common_entities.entity.MenuitemOrderKey;
-import com.ss.scrumptious.common_entities.entity.Order;
-import com.ss.scrumptious.common_entities.entity.Restaurant;
 import com.ss.scrumptious_orders.dao.CustomerRepository;
 import com.ss.scrumptious_orders.dao.MenuitemOrderRepository;
 import com.ss.scrumptious_orders.dao.MenuitemRepository;
@@ -37,9 +37,10 @@ import com.ss.scrumptious_orders.payment.StripeService;
 
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 public class OrderServiceImplTests {
-    
+
+
     OrderRepository orderRepository = Mockito.mock(OrderRepository.class);
-    
+
     CustomerRepository customerRepository = Mockito.mock(CustomerRepository.class);
     RestaurantRepository restaurantRepository = Mockito.mock(RestaurantRepository.class);
     MenuitemRepository menuitemRepository = Mockito.mock(MenuitemRepository.class);
@@ -74,7 +75,7 @@ public class OrderServiceImplTests {
             .name("Mockitos")
             .build();
 
-            
+
             mockMaxOrder = Order.builder()
             .id(Long.valueOf(1))
             .customer(mockCustomer)
@@ -85,27 +86,29 @@ public class OrderServiceImplTests {
             .submittedAt(ZonedDateTime.now())
             .requestedDeliveryTime(ZonedDateTime.now().plusHours(1))
             .build();
-            
+
             mockMinOrder = Order.builder()
             .id(Long.valueOf(2))
             .customer(mockCustomer)
             .build();
-            
+
             mockMenuitem = Menuitem.builder()
             .id(Long.valueOf(1))
             .name("MockBurger")
             .build();
-            
+
             mockMenuitemOrder = MenuitemOrder.builder()
             .menuitem(mockMenuitem)
             .order(mockMaxOrder)
             .quantity(Long.valueOf(1))
             .build();
-            
+
             mockCreateMenuitemOrderDto = CreateMenuitemOrderDto.builder()
                 .menuitemId(mockMenuitem.getId())
                 .quantity(Long.valueOf(1))
                 .build();
+
+
 
     }
 
@@ -147,7 +150,7 @@ public class OrderServiceImplTests {
         when(customerRepository.findById(mockCreateOrderDto.getCustomerId())).thenReturn(Optional.of(mockCustomer));
         when(restaurantRepository.findById(mockCreateOrderDto.getRestaurantId())).thenReturn(Optional.of(mockRestaurant));
         when(orderRepository.saveAndFlush(any(Order.class))).thenReturn(mockMaxOrder);
-        
+
         when(orderRepository.findById(mockMaxOrder.getId())).thenReturn(Optional.of(mockMaxOrder));
         when(menuitemRepository.findById(mockCreateMenuitemOrderDto.getMenuitemId())).thenReturn(Optional.of(mockMenuitem));
         when(menuitemOrderRepository.saveAndFlush(mockMenuitemOrder)).thenReturn(mockMenuitemOrder);
@@ -186,7 +189,7 @@ public class OrderServiceImplTests {
         expectedOrders.add(mockMaxOrder);
         expectedOrders.add(mockMinOrder);
         when(orderRepository.findByCustomer(mockCustomer)).thenReturn(expectedOrders);
-        
+
         List<Order> actual = orderService.getOrdersByCustomerId(mockCustomer.getId());
 
         assertEquals(expectedOrders, actual);
@@ -209,7 +212,7 @@ public class OrderServiceImplTests {
         when(customerRepository.findById(mockUpdateOrderDto.getCustomerId())).thenReturn(Optional.of(mockCustomer));
         when(restaurantRepository.findById(mockUpdateOrderDto.getRestaurantId())).thenReturn(Optional.of(mockRestaurant));
         when(orderRepository.saveAndFlush(any(Order.class))).thenReturn(mockMaxOrder);
-        
+
         when(menuitemOrderRepository.findById(any(MenuitemOrderKey.class))).thenReturn(Optional.of(mockMenuitemOrder));
         when(orderRepository.findById(mockMaxOrder.getId())).thenReturn(Optional.of(mockMaxOrder));
         when(menuitemRepository.findById(mockCreateMenuitemOrderDto.getMenuitemId())).thenReturn(Optional.of(mockMenuitem));
@@ -234,7 +237,7 @@ public class OrderServiceImplTests {
 
     @Test
     void addItemToOrderTest() {
-        
+
         when(menuitemOrderRepository.findById(any(MenuitemOrderKey.class))).thenReturn(Optional.of(mockMenuitemOrder));
         when(orderRepository.findById(mockMaxOrder.getId())).thenReturn(Optional.of(mockMaxOrder));
         when(menuitemRepository.findById(mockCreateMenuitemOrderDto.getMenuitemId())).thenReturn(Optional.of(mockMenuitem));
@@ -251,7 +254,7 @@ public class OrderServiceImplTests {
 
         orderService.deleteOrder(mockMinOrder.getId());
     }
-    
+
     @Test
     void addItemNoQuantityToOrderTest() {
         MenuitemOrder noQuantity = MenuitemOrder.builder()
@@ -292,5 +295,28 @@ public class OrderServiceImplTests {
     @Test
     void removeAllItemsFromOrderTest() {
         orderService.removeAllItemsFromOrder(mockMaxOrder.getId());
+    }
+
+    @Test
+    void refundOrderThrowAlreadyRefundExceptionTest(){
+        Payment mockPayment = Payment.builder().order(mockMaxOrder).stripeId("ch_3KDtAmJMHW5DMjis16Fh7sdh").refunded(true).build();
+        when(orderRepository.findById(mockMaxOrder.getId())).thenReturn(Optional.ofNullable(mockMaxOrder));
+        when(paymentRepository.findByOrder(mockMaxOrder)).thenReturn(mockPayment);
+        assertThrows(PaymentAlreadyRefundException.class, ()->orderService.refundOrder(mockMaxOrder.getId()));
+
+    }
+
+    @Test
+    void refundOrderTest() throws Exception{
+        Payment mockPayment = Payment.builder().order(mockMaxOrder).stripeId("ch_3KDtAmJMHW5DMjis16Fh7sdh").refunded(false).build();
+        when(orderRepository.findById(mockMaxOrder.getId())).thenReturn(Optional.ofNullable(mockMaxOrder));
+        when(paymentRepository.findByOrder(mockMaxOrder)).thenReturn(mockPayment);
+        when(stripeService.refund(mockPayment.getStripeId())).thenThrow(new StripeException("", "", "", 400) {
+            @Override
+            public String getMessage() {
+                return super.getMessage();
+            }
+        });
+        assertThrows(RefundException.class, ()->orderService.refundOrder(mockMaxOrder.getId()));
     }
 }
