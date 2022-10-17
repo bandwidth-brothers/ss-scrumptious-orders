@@ -33,7 +33,7 @@ pipeline{
                     def str=readFile file: "${files[0].path}"
                     echo str
                     }
-			
+		    env JAVA_HOME = "${java}"
 		    sh 'mvn test'
                 }
 
@@ -46,7 +46,7 @@ pipeline{
                 }
                 
 		    steps {
-                    withSonarQubeEnv('jenkins-sonar') {
+	            withSonarQubeEnv('jenkins-sonar') {
                         sh 'mvn clean sonar:sonar -Dsonar.java.source=1.8 -Dsonar.java.jdkHome=/usr/lib/jvm/java-11-openjdk'
                     }
                 }
