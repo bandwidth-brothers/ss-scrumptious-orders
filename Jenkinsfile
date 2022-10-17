@@ -33,7 +33,7 @@ pipeline{
                     echo str
                     }
                 }
-
+		sh 'mvn clean test'
            }
 
             stage('Analysis'){
@@ -44,7 +44,7 @@ pipeline{
                 
 		    steps {
 	            withSonarQubeEnv('jenkins-sonar') {
-                        sh 'mvn clean verify sonar:sonar -Dsonar.java.source=1.8 -Dsonar.java.jdkHome=/usr/lib/jvm/java-11-openjdk'
+                        sh 'mvn sonar:sonar -Dsonar.java.source=1.8 -Dsonar.java.jdkHome=/usr/lib/jvm/java-11-openjdk'
                     }
                 }
             }
