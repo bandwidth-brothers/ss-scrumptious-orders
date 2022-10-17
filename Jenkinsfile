@@ -8,16 +8,16 @@ pipeline{
           DB_PASSWORD = credentials('DB_PASSWORD')
           STRIPE_SECRET_KEY = credentials('STRIPE_SECRET_KEY')
   }
-
+tools{
+                    maven 'maven'
+                    jdk 'jdk8'
+                }
       
 
 	stages{
 
            stage('test'){
-		tools{
-                    maven 'maven'
-                    jdk 'jdk8'
-                }
+		
                 steps{
 
                     script{
