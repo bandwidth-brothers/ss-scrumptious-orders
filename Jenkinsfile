@@ -33,6 +33,7 @@ pipeline{
                     }
 			step{
          		sh 'mvn clean test'
+			}
                 }
            }
 
