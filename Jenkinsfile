@@ -40,7 +40,7 @@ pipeline{
             stage('Analysis'){
                 steps {
                     withSonarQubeEnv('jenkins-sonar') {
-                        sh 'mvn clean verify sonar:sonar -Dsonar.java.jdkHome=/usr/lib/jvm/openjdk-11='
+                        sh 'mvn clean verify sonar:sonar'
                     }
                 }
             }
