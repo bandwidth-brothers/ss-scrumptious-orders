@@ -30,10 +30,9 @@ pipeline{
                                                                                               \r\nSTRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
                                                                                               """
                     def str=readFile file: "${files[0].path}"
-                    echo str
-		    env.JAVA_HOME = tool 'jdk8'
-		    sh 'mvn clean test'
                     }
+			step{
+         		sh 'mvn clean test'
                 }
            }
 
@@ -44,8 +43,6 @@ pipeline{
                 }
                 
 		    steps {
-    		    env.JAVA_HOME = tool 'jdk11'
-
 	            withSonarQubeEnv('jenkins-sonar') {
                         sh 'mvn sonar:sonar -Dsonar.java.source=1.8 -Dsonar.java.jdkHome=/usr/lib/jvm/java-11-openjdk'
                     }
