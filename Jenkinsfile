@@ -40,7 +40,7 @@ pipeline{
             stage('Analysis'){
                 steps {
                     withSonarQubeEnv('jenkins-sonar') {
-                        sh 'mvn sonar:sonar'
+                        sh 'mvn sonar:sonar -Dsonar.java.source=1.8'
                     }
                 }
             }
