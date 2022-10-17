@@ -31,9 +31,9 @@ pipeline{
                                                                                               """
                     def str=readFile file: "${files[0].path}"
                     echo str
+		    sh 'mvn clean test'
                     }
                 }
-		sh 'mvn clean test'
            }
 
             stage('Analysis'){
