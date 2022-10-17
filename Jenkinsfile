@@ -19,7 +19,6 @@ pipeline{
                     jdk 'jdk8'
                 }
                 steps{
-		    sh 'echo $JAVA_HOME'
                     script{
                     def files = findFiles(glob: '**/main/resources/application-product.properties')
                     echo """name ${files[0].name}; path:  ${files[0].path}; directory: ${files[0].directory}; length: ${files[0].length}; modified:  ${files[0].lastModified}"""
