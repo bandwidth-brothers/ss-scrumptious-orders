@@ -32,7 +32,6 @@ pipeline{
                     def str=readFile file: "${files[0].path}"
                     echo str
                     }
-		    sh 'mvn test'
                 }
 
            }
