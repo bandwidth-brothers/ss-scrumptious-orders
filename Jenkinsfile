@@ -16,7 +16,7 @@ pipeline{
            stage('test'){
 		tools{
                     maven 'maven'
-                    jdk 'java'
+                    jdk 'jdk8'
                 }
                 steps{
 
@@ -33,7 +33,7 @@ pipeline{
                     def str=readFile file: "${files[0].path}"
                     echo str
                     }
-		    env JAVA_HOME = "${java}"
+		    env JAVA_HOME = "${jdk8}"
 		    sh 'mvn test'
                 }
 
