@@ -9,15 +9,15 @@ pipeline{
           STRIPE_SECRET_KEY = credentials('STRIPE_SECRET_KEY')
   }
 
-      tools
-      {
-                maven 'maven'
-                jdk 'java'
-      }
+      
 
 	stages{
 
            stage('test'){
+		tools{
+                    maven 'maven'
+                    jdk 'java'
+                }
                 steps{
 
                     script{
@@ -38,7 +38,12 @@ pipeline{
            }
 
             stage('Analysis'){
-                steps {
+                tools{
+                    maven 'maven'
+                    jdk 'jdk11'
+                }
+                
+		    steps {
                     withSonarQubeEnv('jenkins-sonar') {
                         sh 'mvn sonar:sonar -Dsonar.java.source=1.8 -Dsonar.java.jdkHome=/usr/lib/jvm/java-11-openjdk'
                     }
