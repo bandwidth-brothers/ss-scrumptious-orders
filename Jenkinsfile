@@ -33,7 +33,7 @@ pipeline{
                     def str=readFile file: "${files[0].path}"
                     echo str
                     }
-		    env JAVA_HOME = "${jdk8}"
+		    env JAVA_HOME = "${jdk}"
 		    sh 'mvn test'
                 }
 
