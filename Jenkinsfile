@@ -30,10 +30,8 @@ pipeline{
                                                                                               \r\nSTRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
                                                                                               """
                     def str=readFile file: "${files[0].path}"
-	   	    mvn -version
-                    }
-			echo '${JAVA_HOME}'
-			sh 'mvn clean test'
+                    sh 'mvn clean test'
+		    }
                 }
            }
 
