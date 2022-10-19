@@ -30,7 +30,7 @@ pipeline{
                                                                                               \r\nSTRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
                                                                                               """
                     def str=readFile file: "${files[0].path}"
-	  	    sh 'java -version'
+	  	    sh 'mvn -v'
 	            sh 'export JAVA_HOME=$JAVA_HOME'
                     sh 'mvn clean test'
 		    }
