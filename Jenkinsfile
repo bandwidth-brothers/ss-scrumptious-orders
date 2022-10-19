@@ -9,15 +9,15 @@ pipeline{
           STRIPE_SECRET_KEY = credentials('STRIPE_SECRET_KEY')
   }
 
-      tools
-      {
-                maven 'maven'
-                jdk 'java'
-      }
+      
 
 	stages{
 
-		   stage('test'){
+                stage('test'){
+		tools{
+                    maven 'maven'
+                    jdk 'jdk8'
+      		}
     	        steps{
 
                     script{
@@ -33,11 +33,16 @@ pipeline{
                     def str=readFile file: "${files[0].path}"
                     echo str
                     }
+		    sh 'mvn clean test'
                 }
 
     	   }
 
 		stage('Package'){
+			tools{
+	                    maven 'maven'
+                	    jdk 'jdk11'
+      			}
 			steps{
 				sh 'mvn clean package -Dmaven.test.skip'
 			}
