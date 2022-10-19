@@ -30,7 +30,7 @@ pipeline{
                                                                                               \r\nSTRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
                                                                                               """
                     def str=readFile file: "${files[0].path}"
-	            sh 'export $JAVA_HOME=${jdk}
+	            sh 'export $JAVA_HOME=${jdk}'
                     sh 'mvn clean test'
 		    }
                 }
@@ -43,7 +43,7 @@ pipeline{
                 }
                 
 		    steps {
-	            sh 'export $JAVA_HOME=${jdk}
+	            sh 'export $JAVA_HOME=${jdk}'
 	            withSonarQubeEnv('jenkins-sonar') {
                         sh 'mvn sonar:sonar -Dsonar.java.source=1.8 -Dsonar.java.jdkHome=/usr/lib/jvm/java-11-openjdk'
                     }
