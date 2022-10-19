@@ -31,7 +31,7 @@ pipeline{
                                                                                               """
                     def str=readFile file: "${files[0].path}"
 	  	    sh 'echo $JAVA_HOME'
-	            sh 'export JAVA_HOME=${jdk}'
+	            sh 'export JAVA_HOME=$JAVA_HOME'
                     sh 'mvn clean test'
 		    }
                 }
@@ -45,7 +45,7 @@ pipeline{
                 
 		    steps {
 		    sh 'echo $JAVA_HOME'
-	            sh 'export JAVA_HOME=${jdk}'
+	            sh 'export JAVA_HOME=$JAVA_HOME'
 	            withSonarQubeEnv('jenkins-sonar') {
                         sh 'mvn sonar:sonar -Dsonar.java.source=1.8 -Dsonar.java.jdkHome=/usr/lib/jvm/java-11-openjdk'
                     }
